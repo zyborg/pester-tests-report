@@ -1,0 +1,94 @@
+
+## This is a SAMPLE metadata file for a GitHub Action.  For more info:
+##    https://help.github.com/en/articles/metadata-syntax-for-github-actions
+
+name: pester-tests-report
+author: EBekker
+description: |
+  Executes PowerShell Pester tests within a GitHub Workflow,
+  and generates a Report from the test results and attaches
+  it to the Workflow Run as a Check Run.
+
+## Here you describe your *formal* inputs -- those that are
+## documented and can be displayed by the marketplace.
+## You also use these to identify the *required* inputs.
+inputs:
+
+  test_results_path:
+    description: |
+      Path to the test results file which will be used to generate
+      a report.  If this path is provided, it will override the
+      execution of all Pester tests, so the **`include_paths`**
+      input and all other inputs that drive the test invocation behavior
+      will be ignored. Instead a report will be generated based on the
+      results stored in the file pointed to by this path.
+      At this time, the only test results format supported is the
+      NUnit 2.5 Tests results XML schema.
+    required: false
+
+  include_paths:
+    description: |
+      Comma-separated list of one or more test files or directories
+      that contain test files, relative to the root of the project.
+      This path is optional and defaults to the project root,
+      in which case all tests script across the entire project tree
+      will be discovered.  A test script is identified by the
+      filename pattern `*.Tests.ps1`.
+      This parameter is _ignored_ if the **`test_results_path`**
+      parameter is also provided.
+    required: false
+
+  exclude_paths:
+    description: |
+      Comma-separated list of one or more test files or directories
+      that contain test files, relative to the root of the project,
+      that will be excluded from the list fo auto-discovered tests.
+      This parameter is _ignored_ if the **`test_results_path`**
+      parameter is also provided.
+    required: false
+
+  include_tags:
+    description: |
+      Comma-separated list of tags to include for testing.
+      This parameter is _ignored_ if the **`test_results_path`**
+      parameter is also provided.
+    required: false
+
+  exclude_tags:
+    description: |
+      Comma-separated list of tags to exclude for testing.
+      This parameter is _ignored_ if the **`test_results_path`**
+      parameter is also provided.
+    required: false
+
+## Here you describe your *formal* outputs.
+outputs:
+
+  test_results_path:
+    description: |
+      Path to the test results file.  If the same-named input
+      was provided to this action, this value will be the same.
+      Otherwise, this will be the path to where the test results
+      file was generated from running the resolved Pester tests.
+  
+  error_message:
+    description: |
+      The summary message of the error returned by Pester, or
+      empty if no error was produced.
+  
+  error_clixml_path:
+    description:
+      If Pester produced an error during invocation, this will
+      be the path to an export of the full error record in the
+      CLIXML form.  A subsequent PowerShell step can recover
+      this object using the Import-Clixml cmdlet.
+
+branding:
+  color: purple
+  icon: check-circle
+
+## Even though the Action logic may be implemented
+## in PWSH, we still need a NodeJS entry point
+runs:
+  using: node12
+  main: _init/index.js
