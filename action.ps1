@@ -91,6 +91,7 @@ else {
     ## TODO: For now, only NUnit is supported in Pester 5.x
     ##$pesterConfig.TestResult.OutputFormat = ''
     $pesterConfig.Run.PassThru = $true
+    $pesterConfig.TestResult.Enabled = $true
     $pesterConfig.TestResult.OutputPath = $test_results_path
 
     $error_message = ''
