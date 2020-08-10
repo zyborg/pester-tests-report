@@ -145,6 +145,7 @@ if ($test_results_path) {
     $ghToken = Get-ActionInput -Name github_token -Required
     $ctx = Get-ActionContext
     $repo = Get-ActionRepo
+    $repoFullName = "$($repo.Owner)/$($repo.Name)"
 
     Write-ActionInfo "Resolving REF"
     $ref = $ctx.Sha
@@ -163,7 +164,7 @@ if ($test_results_path) {
     Write-ActionInfo "Resolved REF as $ref"
 
     Write-ActionInfo "Adding Check Run"
-    $url = 'https://api.github.com/repos/$($repo.Owner)/$($repo.Name)/check-runs'
+    $url = "https://api.github.com/repos/$repoFullName/check-runs"
     $hdr = @{
         Accept = 'application/vnd.github.antiope-preview+json'
         Authorization = "token $ghToken"
