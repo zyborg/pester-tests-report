@@ -1,0 +1,21 @@
+
+name: test-action
+
+on:
+  push:
+  release:
+    types: published
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: checkout
+        uses: actions/checkout@v1
+
+      - name: use this action
+        uses: ./
+        with:
+          include_paths: tests
