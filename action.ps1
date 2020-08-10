@@ -144,6 +144,7 @@ if ($test_results_path) {
     Write-ActionInfo "Publishing Report to GH Workflow"
     $ghToken = Get-ActionInput -Name github_token -Required
     $ctx = Get-ActionContext
+    $repo = Get-ActionRepo
 
     Write-ActionInfo "Resolving REF"
     $ref = $ctx.Sha
@@ -159,9 +160,10 @@ if ($test_results_path) {
         Write-ActionError "Failed to resolve REF"
         exit 1
     }
+    Write-ActionInfo "Resolved REF as $ref"
 
     Write-ActionInfo "Adding Check Run"
-    $url = 'https://api.github.com/repos/ebekker/pwsh-github-action-tools/check-runs'
+    $url = 'https://api.github.com/repos/$($repo.Owner)/$($repo.Name)/check-runs'
     $hdr = @{
         Accept = 'application/vnd.github.antiope-preview+json'
         Authorization = "token $ghToken"
