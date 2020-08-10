@@ -142,7 +142,7 @@ if ($test_results_path) {
     $reportData = [System.IO.File]::ReadAllText($test_report_path)
 
     Write-ActionInfo "Publishing Report to GH Workflow"
-    $ghToken = $env:GITHUB_TOKEN
+    $ghToken = Get-ActionInput -Name github_token -Required
     $ctx = Get-ActionContext
 
     Write-ActionInfo "Resolving REF"

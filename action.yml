@@ -79,6 +79,11 @@ inputs:
       The title of the report that will be embedded in the report
       itself, which defaults to the same as the `report_name` input.
 
+  github_token:
+    description: |
+      GITHUB_TOKEN to authenticate against API calls to attach
+      report to Workflow Run.
+
 ## Here you describe your *formal* outputs.
 outputs:
 

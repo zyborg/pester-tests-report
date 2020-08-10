@@ -20,6 +20,7 @@ jobs:
         uses: ./
         with:
           include_paths: tests
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: dump results
         shell: pwsh
