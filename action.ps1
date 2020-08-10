@@ -29,6 +29,7 @@ $inputs = @{
     exclude_paths     = Get-ActionInput exclude_paths
     include_tags      = Get-ActionInput include_tags
     exclude_tags      = Get-ActionInput exclude_tags
+    output_level      = Get-ActionInput output_level
 }
 
 $test_results_path = $inputs.test_results_path
@@ -73,6 +74,11 @@ else {
     }
     else { Write-ActionInfo "  * Default exclude_tags"}
 
+    if ($inputs.output_level) {
+        Write-ActionInfo "  * output_level: $output_level"
+        $pesterConfig.Output.Verbosity = $output_level
+    }
+
     Write-ActionInfo "Creating test results space"
     $test_results_dir = Join-Path $PWD _TMP
     $test_results_path = Join-Path $test_results_dir test-results.nunit.xml
@@ -82,13 +88,14 @@ else {
 
     ## TODO: For now, only NUnit is supported in Pester 5.x
     ##$pesterConfig.TestResult.OutputFormat = ''
+    $pesterConfig.Run.PassThru = $true
     $pesterConfig.TestResult.OutputPath = $test_results_path
 
     $error_message = ''
     $error_clixml_path = ''
     $result_clixml_path = Join-Path $test_results_dir pester-result.xml
 
-    $pesterResult = Invoke-Pester -Configuration $pesterConfig -ErrorVariable $pesterError -PassThru
+    $pesterResult = Invoke-Pester -Configuration $pesterConfig -ErrorVariable $pesterError
     if ($pesterError) {
         Write-ActionWarning "Pester invocation produced error:"
         Write-ActionWarning $pesterError
