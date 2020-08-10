@@ -36,8 +36,8 @@ if ($test_results_path) {
     Write-ActionInfo "Test Results Path provided as input; skipping Pester tests"
 }
 else {
-    $include_paths = splitListInput $inputs.include_paths
-    $exclude_paths = splitListInput $inputs.exclude_paths
+    $include_paths = splitListInput $inputs.include_paths | % { [System.IO.Path]::Combine($PWD, $_) }
+    $exclude_paths = splitListInput $inputs.exclude_paths | % { [System.IO.Path]::Combine($PWD, $_) }
     $include_tags  = splitListInput $inputs.include_tags
     $exclude_tags  = splitListInput $inputs.exclude_tags
 
@@ -97,6 +97,12 @@ else {
     }
 }
 
-Set-ActionOutput -Name test_results_path -Value $test_results_path
-Set-ActionOutput -Name error_message     -Value $error_message
-Set-ActionOutput -Name error_clixml_path -Value $error_clixml_path
+if ($test_results_path) {
+    Set-ActionOutput -Name test_results_path -Value $test_results_path
+}
+if ($error_message) {
+    Set-ActionOutput -Name error_message -Value $error_message
+}
+if ($error_clixml_path) {
+    Set-ActionOutput -Name error_clixml_path -Value $error_clixml_path
+}
