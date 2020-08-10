@@ -42,6 +42,7 @@ else {
     $exclude_tags  = splitListInput $inputs.exclude_tags
 
     Write-ActionInfo "Running Pester tests with following:"
+    Write-ActionInfo "  * realtive to PWD: $PWD"
     $pesterConfig = [PesterConfiguration]::new()
 
     if ($include_paths) {
@@ -96,6 +97,6 @@ else {
     }
 }
 
-Write-ActionOutput -Name test_results_path -Value $test_results_path
-Write-ActionOutput -Name error_message     -Value $error_message
-Write-ActionOutput -Name error_clixml_path -Value $error_clixml_path
+Set-ActionOutput -Name test_results_path -Value $test_results_path
+Set-ActionOutput -Name error_message     -Value $error_message
+Set-ActionOutput -Name error_clixml_path -Value $error_clixml_path
