@@ -68,6 +68,17 @@ inputs:
       The default is `normal`.
     required: false
 
+  report_name:
+    description: |
+      The name of the report object that will be attached to the
+      Workflow Run.  Defaults to the name `TEST_RESULTS_<datetime>`
+      where `<datetime>` is in the form `yyyyMMdd_hhmmss`.
+
+  report_title:
+    description: |
+      The title of the report that will be embedded in the report
+      itself, which defaults to the same as the `report_name` input.
+
 ## Here you describe your *formal* outputs.
 outputs:
 

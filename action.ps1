@@ -30,8 +30,11 @@ $inputs = @{
     include_tags      = Get-ActionInput include_tags
     exclude_tags      = Get-ActionInput exclude_tags
     output_level      = Get-ActionInput output_level
+    report_name       = Get-ActionInput report_name
+    report_title      = Get-ActionInput report_title
 }
 
+$test_results_dir = Join-Path $PWD _TMP
 $test_results_path = $inputs.test_results_path
 if ($test_results_path) {
     Write-ActionInfo "Test Results Path provided as input; skipping Pester tests"
@@ -80,7 +83,6 @@ else {
     }
 
     Write-ActionInfo "Creating test results space"
-    $test_results_dir = Join-Path $PWD _TMP
     $test_results_path = Join-Path $test_results_dir test-results.nunit.xml
     if (-not (Test-Path -Path $test_results_dir -PathType Container)) {
         mkdir $test_results_dir
@@ -122,4 +124,57 @@ else {
 
 if ($test_results_path) {
     Set-ActionOutput -Name test_results_path -Value $test_results_path
+
+    $report_name = $inputs.report_name
+    $report_title = $inputs.report_title
+
+    if (-not $report_name) {
+        $report_name = "TEST_RESULTS_$([datetime]::Now.ToString('yyyyMMdd_hhmmss'))"
+    }
+    if (-not $report_title) {
+        $report_title = $report_name
+    }
+
+    $test_report_path = Join-Path $test_results_dir test-results.md
+    ./nunit-report/nunit2xml.ps1 -Verbose -xmlFile $test_results_path -mdFile $test_report_path
+
+    $reportData = [System.IO.File]::ReadAllText($test_report_path)
+
+    Write-ActionInfo "Publishing Report to GH Workflow"
+    $ghToken = $env:GITHUB_TOKEN
+    $ctx = Get-ActionContext
+
+    Write-ActionInfo "Resolving REF"
+    $ref = $ctx.Sha
+    if ($ctx.EventName -eq 'pull_request') {
+        Write-ActionInfo "Resolving PR REF"
+        $ref = $ctx.Payload.pull_request.head.sha
+        if (-not $ref) {
+            Write-ActionInfo "Resolving PR REF as AFTER"
+            $ref = $ctx.Payload.after
+        }
+    }
+    if (-not $ref) {
+        Write-ActionError "Failed to resolve REF"
+        exit 1
+    }
+
+    Write-ActionInfo "Adding Check Run"
+    $url = 'https://api.github.com/repos/ebekker/pwsh-github-action-tools/check-runs'
+    $hdr = @{
+        Accept = 'application/vnd.github.antiope-preview+json'
+        Authorization = "token $ghToken"
+    }
+    $bdy = @{
+        name       = $report_name
+        head_sha   = $ref
+        status     = 'completed'
+        conclusion = 'neutral'
+        output     = @{
+            title   = 'Test Run:  GitHubActions_tests'
+            summary = "This run completed at ``${[datetime]::Now}``"
+            text    = $reportData
+        }
+    }
+    Invoke-WebRequest -Headers $hdr $url -Method Post -Body ($bdy | ConvertTo-Json)
 }
