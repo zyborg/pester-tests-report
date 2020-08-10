@@ -8,7 +8,7 @@ on:
 
 jobs:
 
-  build:
+  run-tests:
     runs-on: ubuntu-latest
     steps:
 
@@ -16,6 +16,28 @@ jobs:
         uses: actions/checkout@v1
 
       - name: use this action
+        id: testAction1
         uses: ./
         with:
           include_paths: tests
+
+      - name: dump results
+        shell: pwsh
+        run: |
+          ipmo GitHubActions
+
+          $test_results_path = '${{ steps.testAction1.outputs.test_results_path }}'
+          $error_message     = '${{ steps.testAction1.outputs.error_message }}'
+          $error_clixml_path = '${{ steps.testAction1.outputs.error_clixml_path }}'
+
+          Write-ActionInfo "Found these outputs from [testAction1]:"
+          $test_results_path = Write-ActionInfo "  * test_results_path = $test_results_path"
+          $error_message     = Write-ActionInfo "  * error_message     = $error_message    "
+          $error_clixml_path = Write-ActionInfo "  * error_clixml_path = $error_clixml_path"
+
+          if ($error_clixml_path) {
+            $er = Import-Clixml -Path $error_clixml_path
+            Write-ActionInfo "Loaded up the ErrorRecord:"
+            $er
+            $er.Exception
+          }
