@@ -86,7 +86,9 @@ else {
 
     $error_message = ''
     $error_clixml_path = ''
-    Invoke-Pester -Configuration $pesterConfig -ErrorVariable $pesterError
+    $result_clixml_path = Join-Path $test_results_dir pester-result.xml
+
+    $pesterResult = Invoke-Pester -Configuration $pesterConfig -ErrorVariable $pesterError -PassThru
     if ($pesterError) {
         Write-ActionWarning "Pester invocation produced error:"
         Write-ActionWarning $pesterError
@@ -95,14 +97,22 @@ else {
         $error_clixml_path = Join-Path $test_results_dir pester-error.xml
         Export-Clixml -InputObject $pesterError -Path $error_clixml_path
     }
+    Export-Clixml -InputObject $pesterResult -Path $result_clixml_path
+
+    if ($error_message) {
+        Set-ActionOutput -Name error_message -Value $error_message
+    }
+    if ($error_clixml_path) {
+        Set-ActionOutput -Name error_clixml_path -Value $error_clixml_path
+    }
+
+    Set-ActionOutput -Name result_clixml_path -Value $result_clixml_path
+    Set-ActionOutput -Name result_value -Value ($pesterResult.Result)
+    Set-ActionOutput -Name total_count -Value ($pesterResult.TotalCount)
+    Set-ActionOutput -Name passed_count -Value ($pesterResult.PassedCount)
+    Set-ActionOutput -Name failed_count -Value ($pesterResult.FailedCount)
 }
 
 if ($test_results_path) {
     Set-ActionOutput -Name test_results_path -Value $test_results_path
-}
-if ($error_message) {
-    Set-ActionOutput -Name error_message -Value $error_message
-}
-if ($error_clixml_path) {
-    Set-ActionOutput -Name error_clixml_path -Value $error_clixml_path
 }

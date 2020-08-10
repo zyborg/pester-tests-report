@@ -61,6 +61,13 @@ inputs:
       parameter is also provided.
     required: false
 
+  output_level:
+    description: |
+      Optionally specify the level of output detail for the test results.
+      May be one of: `none`, `Minimal`, `normal`, `detailed`, `diagnostic`
+      The default is `normal`.
+    required: false
+
 ## Here you describe your *formal* outputs.
 outputs:
 
@@ -81,7 +88,29 @@ outputs:
       If Pester produced an error during invocation, this will
       be the path to an export of the full error record in the
       CLIXML form.  A subsequent PowerShell step can recover
-      this object using the Import-Clixml cmdlet.
+      this object using the `Import-Clixml` cmdlet.
+  
+  result_clixml_path:
+    description:
+      If Pester produced an invocation result, this will
+      be the path to an export of the full result record in the
+      CLIXML form.  A subsequent PowerShell step can recover
+      this object using the `Import-Clixml` cmdlet.
+
+  result_value:
+    description: |
+      A single string indicating the final result such as
+      `Failed` or `Passed`.
+  
+  total_count:
+    description: Total number of tests discovered.
+
+  passed_count:
+    description: Total number of tests passed.
+
+  failed_count:
+    description: Total number of tests failed.
+
 
 branding:
   color: purple

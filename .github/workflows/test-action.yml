@@ -30,14 +30,31 @@ jobs:
           $error_message     = '${{ steps.testAction1.outputs.error_message }}'
           $error_clixml_path = '${{ steps.testAction1.outputs.error_clixml_path }}'
 
+          $result_clixml_path = '${{ steps.testAction1.outputs.result_clixml_path }}'
+          $result_value       = '${{ steps.testAction1.outputs.result_value }}'
+          $total_count        = '${{ steps.testAction1.outputs.total_count }}'
+          $passed_count       = '${{ steps.testAction1.outputs.passed_count }}'
+          $failed_count       = '${{ steps.testAction1.outputs.failed_count }}'
+
           Write-ActionInfo "Found these outputs from [testAction1]:"
-          $test_results_path = Write-ActionInfo "  * test_results_path = $test_results_path"
-          $error_message     = Write-ActionInfo "  * error_message     = $error_message    "
-          $error_clixml_path = Write-ActionInfo "  * error_clixml_path = $error_clixml_path"
+          Write-ActionInfo "  * test_results_path  = $test_results_path"
+          Write-ActionInfo "  * error_message      = $error_message"
+          Write-ActionInfo "  * error_clixml_path  = $error_clixml_path"
+          Write-ActionInfo "  * result_clixml_path = $result_clixml_path"
+          Write-ActionInfo "  * result_value       = $result_value"
+          Write-ActionInfo "  * total_count        = $total_count"
+          Write-ActionInfo "  * passed_count       = $passed_count"
+          Write-ActionInfo "  * failed_count       = $failed_count"
 
           if ($error_clixml_path) {
             $er = Import-Clixml -Path $error_clixml_path
             Write-ActionInfo "Loaded up the ErrorRecord:"
             $er
             $er.Exception
+          }
+
+          if ($result_clixml_path) {
+            $pr = Import-Clixml -Path $result_clixml_path
+            Write-ActionInfo "Loaded up the Pester Result:"
+            $pr
           }
