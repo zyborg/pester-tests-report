@@ -138,21 +138,21 @@ else {
 }
 
 function Build-MarkdownReport {
-    $report_name = $inputs.report_name
-    $report_title = $inputs.report_title
+    $script:report_name = $inputs.report_name
+    $script:report_title = $inputs.report_title
 
-    if (-not $report_name) {
-        $report_name = "TEST_RESULTS_$([datetime]::Now.ToString('yyyyMMdd_hhmmss'))"
+    if (-not $script:report_name) {
+        $script:report_name = "TEST_RESULTS_$([datetime]::Now.ToString('yyyyMMdd_hhmmss'))"
     }
     if (-not $report_title) {
-        $report_title = $report_name
+        $script:report_title = $report_name
     }
 
-    $test_report_path = Join-Path $test_results_dir test-results.md
+    $script:test_report_path = Join-Path $test_results_dir test-results.md
     & "$PSScriptRoot/nunit-report/nunitxml2md.ps1" -Verbose `
-        -xmlFile $test_results_path `
-        -mdFile $test_report_path -xslParams @{
-            reportTitle = $report_title
+        -xmlFile $script:test_results_path `
+        -mdFile $script:test_report_path -xslParams @{
+            reportTitle = $script:report_title
         }
 }
 
