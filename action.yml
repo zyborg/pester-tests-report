@@ -25,6 +25,14 @@ inputs:
       NUnit 2.5 Tests results XML schema.
     required: false
 
+  full_names_filters:
+    description:
+      Comma-separated list of test full names, or with `-like`
+      wildcards, to restrict which tests are resolved.  The default
+      is to include every test discovered matching the other input
+      parameters.
+    required: false
+
   include_paths:
     description: |
       Comma-separated list of one or more test files or directories

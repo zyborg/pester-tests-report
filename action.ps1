@@ -25,6 +25,7 @@ function writeListInput { $args[0] | % { Write-ActionInfo "    - $_" } }
 
 $inputs = @{
     test_results_path = Get-ActionInput test_results_path
+    full_names_filter = Get-ActionInput full_names_filter
     include_paths     = Get-ActionInput include_paths
     exclude_paths     = Get-ActionInput exclude_paths
     include_tags      = Get-ActionInput include_tags
@@ -40,14 +41,22 @@ if ($test_results_path) {
     Write-ActionInfo "Test Results Path provided as input; skipping Pester tests"
 }
 else {
-    $include_paths = splitListInput $inputs.include_paths
-    $exclude_paths = splitListInput $inputs.exclude_paths
-    $include_tags  = splitListInput $inputs.include_tags
-    $exclude_tags  = splitListInput $inputs.exclude_tags
+    $full_names_filter = splitListInput $inputs.full_names_filter
+    $include_paths     = splitListInput $inputs.include_paths
+    $exclude_paths     = splitListInput $inputs.exclude_paths
+    $include_tags      = splitListInput $inputs.include_tags
+    $exclude_tags      = splitListInput $inputs.exclude_tags
 
     Write-ActionInfo "Running Pester tests with following:"
     Write-ActionInfo "  * realtive to PWD: $PWD"
     $pesterConfig = [PesterConfiguration]::new()
+
+    if ($full_names_filter) {
+        Write-ActionInfo "  * full_names_filter:"
+        writeListInput $full_names_filter
+        $pesterConfig.Filter.FullName = $full_names_filter
+    }
+    else { Write-ActionInfo "  * Default full_names_filter"}
 
     if ($include_paths) {
         Write-ActionInfo "  * include_paths:"
