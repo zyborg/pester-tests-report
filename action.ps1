@@ -18,6 +18,7 @@ $modulesToInstall | ForEach-Object {
 Import-Module GitHubActions -Force
 Import-Module Pester -Force
 
+Write-ActionInfo "Running from [$($PSScriptRoot)]"
 
 function splitListInput { $args[0] -split ',' | % { $_.Trim() } }
 function writeListInput { $args[0] | % { Write-ActionInfo "    - $_" } }
@@ -33,6 +34,10 @@ $inputs = @{
     output_level       = Get-ActionInput output_level
     report_name        = Get-ActionInput report_name
     report_title       = Get-ActionInput report_title
+    github_token       = Get-ActionInput github_token -Required
+    skip_check_run     = Get-ActionInput skip_check_run
+    gist_name          = Get-ActionInput gist_name
+    gist_token         = Get-ActionInput gist_token
 }
 
 $test_results_dir = Join-Path $PWD _TMP
@@ -132,9 +137,7 @@ else {
     Set-ActionOutput -Name failed_count -Value ($pesterResult.FailedCount)
 }
 
-if ($test_results_path) {
-    Set-ActionOutput -Name test_results_path -Value $test_results_path
-
+function Build-MarkdownReport {
     $report_name = $inputs.report_name
     $report_title = $inputs.report_title
 
@@ -146,16 +149,21 @@ if ($test_results_path) {
     }
 
     $test_report_path = Join-Path $test_results_dir test-results.md
-    ./nunit-report/nunitxml2md.ps1 -Verbose `
+    & "$PSScriptRoot/nunit-report/nunitxml2md.ps1" -Verbose `
         -xmlFile $test_results_path `
         -mdFile $test_report_path -xslParams @{
             reportTitle = $report_title
         }
+}
 
-    $reportData = [System.IO.File]::ReadAllText($test_report_path)
+function Publish-ToCheckRun {
+    param(
+        [string]$reportData
+    )
 
     Write-ActionInfo "Publishing Report to GH Workflow"
-    $ghToken = Get-ActionInput -Name github_token -Required
+
+    $ghToken = $inputs.github_token
     $ctx = Get-ActionContext
     $repo = Get-ActionRepo
     $repoFullName = "$($repo.Owner)/$($repo.Repo)"
@@ -195,4 +203,92 @@ if ($test_results_path) {
         }
     }
     Invoke-WebRequest -Headers $hdr $url -Method Post -Body ($bdy | ConvertTo-Json)
+}
+
+function Publish-ToGist {
+    param(
+        [string]$reportData
+    )
+
+    Write-ActionInfo "Publishing Report to GH Workflow"
+
+    $reportGistName = $inputs.gist_name
+    $gist_token = $inputs.gist_token
+    Write-ActionInfo "Resolved Report Gist Name.....: [$reportGistName]"
+
+    $gistsApiUrl = "https://api.github.com/gists"
+    $apiHeaders = @{
+        Accept        = "application/vnd.github.v2+json"
+        Authorization = "token $gist_token"
+    }
+
+    ## Request all Gists for the current user
+    $listGistsResp = Invoke-WebRequest -Headers $apiHeaders -Uri $gistsApiUrl
+
+    ## Parse response content as JSON
+    $listGists = $listGistsResp.Content | ConvertFrom-Json -AsHashtable
+    Write-ActionInfo "Got [$($listGists.Count)] Gists for current account"
+
+    ## Isolate the first Gist with a file matching the expected metadata name
+    $reportGist = $listGists | Where-Object { $_.files.$reportGistName } | Select-Object -First 1
+
+    if ($reportGist) {
+        Write-ActionInfo "Found the Tests Report Gist!"
+        ## Debugging:
+        #$reportDataRawUrl = $reportGist.files.$reportGistName.raw_url
+        #Write-ActionInfo "Fetching Tests Report content from Raw Url"
+        #$reportDataRawResp = Invoke-WebRequest -Headers $apiHeaders -Uri $reportDataRawUrl
+        #$reportDataContent = $reportDataRawResp.Content
+        #if (-not $reportData) {
+        #    Write-ActionWarning "Tests Report content seems to be missing"
+        #    Write-ActionWarning "[$($reportGist.files.$reportGistName)]"
+        #    Write-ActionWarning "[$reportDataContent]"
+        #}
+        #else {
+        #    Write-Information "Got existing Tests Report"
+        #}
+    }
+
+    if (-not $reportGist) {
+        Write-ActionInfo "Creating initial Tests Report Gist"
+        $createGistResp = Invoke-WebRequest -Headers $apiHeaders -Uri $gistsApiUrl -Method Post -Body (@{
+            public = $false
+            files = @{
+                $reportGistName = @{
+                    content = $reportData
+                }
+            }
+        } | ConvertTo-Json)
+        $createGist = $createGistResp.Content | ConvertFrom-Json -AsHashtable
+        $reportGist = $createGist
+        Write-ActionInfo "Create Response: $createGistResp"
+    }
+    else {
+        Write-ActionInfo "Updating Tests Report Gist"
+        $updateGistUrl = "$gistsApiUrl/$($reportGist.id)"
+        $updateGistResp = Invoke-WebRequest -Headers $apiHeaders -Uri $updateGistUrl -Method Patch -Body (@{
+            files = @{
+                $reportGistName = @{
+                    content = $reportData
+                }
+            }
+        } | ConvertTo-Json)
+
+        Write-ActionInfo "Update Response: $updateGistResp"
+    }
+}
+
+if ($test_results_path) {
+    Set-ActionOutput -Name test_results_path -Value $test_results_path
+
+    Build-MarkdownReport
+
+    $reportData = [System.IO.File]::ReadAllText($test_report_path)
+
+    if ($inputs.skip_check_run -ne $true) {
+        Publish-ToCheckRun -ReportData $reportData
+    }
+    if ($inputs.gist_name -and $inputs.gist_token) {
+        Publish-ToGist -ReportData $reportData
+    }
 }

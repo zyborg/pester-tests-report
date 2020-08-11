@@ -91,6 +91,22 @@ inputs:
       GITHUB_TOKEN to authenticate against API calls to attach
       report to Workflow Run.
 
+  gist_name:
+    description: |
+      If this value is specifed, the Test Results Report will be
+      attached as a version of a Gist under the name of this input.
+      The `gist_token` input is also required to use this feature.
+
+  gist_token:
+    description: |
+      GitHub OAuth/PAT token to be used for accessing Gist to store
+      test results report. The integrated GITHUB_TOKEN that is normally
+      accessible during a Workflow does not include read/write permissions
+      to associated Gists, therefore a separate token is needed.
+      You can control which account is used to actually store the state by
+      generating a token associated with the target account.
+
+
 ## Here you describe your *formal* outputs.
 outputs:
 
