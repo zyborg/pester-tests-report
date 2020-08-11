@@ -311,10 +311,10 @@ function Publish-ToGist {
         $gist_badge_url = "https://img.shields.io/badge/$gist_badge_label-$gist_badge_message-$gist_badge_color"
         $gistBadgeResult = Invoke-WebRequest $gist_badge_url -ErrorVariable $gistBadgeError
         if ($gistBadgeError) {
-            $gistFiles."$reportGistName_badge.txt" = $gistBadgeError.Message
+            $gistFiles."$reportGistName_badge.txt" = @{ content = $gistBadgeError.Message }
         }
         else {
-            $gistFiles."$reportGistName_badge.svg" = $gistBadgeResult.Content
+            $gistFiles."$reportGistName_badge.svg" = @{ content = $gistBadgeResult.Content }
         }
     }
 
