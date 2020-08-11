@@ -162,6 +162,7 @@ if ($test_results_path) {
         exit 1
     }
     Write-ActionInfo "Resolved REF as $ref"
+    Write-ActionInfo "Resolve Repo Full Name as $repoFullName"
 
     Write-ActionInfo "Adding Check Run"
     $url = "https://api.github.com/repos/$repoFullName/check-runs"
@@ -175,7 +176,7 @@ if ($test_results_path) {
         status     = 'completed'
         conclusion = 'neutral'
         output     = @{
-            title   = 'Test Run:  GitHubActions_tests'
+            title   = $report_title
             summary = "This run completed at ``${[datetime]::Now}``"
             text    = $reportData
         }
