@@ -138,10 +138,11 @@ jobs:
         with:
           test_results_path: copy-of-tests/test-results.nunit.xml
           report_name: Small Set of Tests
-          gist_name: pester-tests-report_GHAction_test1
+          gist_name: pester-tests-report_GHAction_test1.md
           report_title: Subset of Tests
           github_token: ${{ secrets.GITHUB_TOKEN }}
           gist_token: ${{ secrets.GIST_TOKEN }}
+          gist_badge_label: Tests %ExecutedAt%
 
       - name: dump results, again
         shell: pwsh

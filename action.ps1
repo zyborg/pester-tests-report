@@ -38,6 +38,8 @@ $inputs = @{
     skip_check_run     = Get-ActionInput skip_check_run
     gist_name          = Get-ActionInput gist_name
     gist_token         = Get-ActionInput gist_token
+    gist_badge_label   = Get-ActionInput gist_badge_label
+    gist_badge_message = Get-ActionInput gist_badge_message
 }
 
 $test_results_dir = Join-Path $PWD _TMP
@@ -135,6 +137,43 @@ else {
     Set-ActionOutput -Name total_count -Value ($pesterResult.TotalCount)
     Set-ActionOutput -Name passed_count -Value ($pesterResult.PassedCount)
     Set-ActionOutput -Name failed_count -Value ($pesterResult.FailedCount)
+}
+
+function Resolve-EscapeTokens {
+    param(
+        [object]$Message,
+        [object]$Context,
+        [switch]$UrlEncode
+    )
+
+    $m = ''
+    $Message = $Message.ToString()
+    $p2 = -1
+    $p1 = $Message.IndexOf('%')
+    while ($p1 -gt -1) {
+        $m += $Message.Substring($p2 + 1, $p1 - $p2 - 1)
+        $p2 = $Message.IndexOf('%', $p1 + 1)
+        if ($p2 -lt 0) {
+            $m += $Message.Substring($p1)
+            break
+        }
+        $etName = $Message.Substring($p1 + 1, $p2 - $p1 - 1)
+        if ($etName -eq '') {
+            $etValue = '%'
+        }
+        else {
+            $etValue = $Context.$etName
+        }
+        $m += $etValue
+        $p1 = $Message.IndexOf('%', $p2 + 1)
+    }
+    $m += $Message.Substring($p2 + 1)
+
+    if ($UrlEncode) {
+        $m = [System.Web.HTTPUtility]::UrlEncode($m).Replace('+', '%20')
+    }
+
+    $m
 }
 
 function Build-MarkdownReport {
@@ -249,15 +288,41 @@ function Publish-ToGist {
         #}
     }
 
+    $gistFiles = @{
+        $reportGistName = @{
+            content = $reportData
+        }
+    }
+    if ($inputs.gist_badge_label) {
+        $gist_badge_label = $inputs.gist_badge_label
+        $gist_badge_message = $inputs.gist_badge_message
+
+        if (-not $gist_badge_message) {
+            $gist_badge_message = '%Result%'
+        }
+
+        $gist_badge_label = Resolve-EscapeTokens $gist_badge_label $pesterResult -UrlEncode
+        $gist_badge_message = Resolve-EscapeTokens $gist_badge_message $pesterResult -UrlEncode
+        $gist_badge_color = switch ($pesterResult.Result) {
+            'Passed' { 'green' }
+            'Failed' { 'red' }
+            default { 'yellow' }
+        }
+        $gist_badge_url = "https://img.shields.io/badge/$gist_badge_label-$gist_badge_message-$gist_badge_color"
+        $gistBadgeResult = Invoke-WebRequest $gist_badge_url -ErrorVariable $gistBadgeError
+        if ($gistBadgeError) {
+            $gistFiles."$reportGistName_badge.txt" = $gistBadgeError.Message
+        }
+        else {
+            $gistFiles."$reportGistName_badge.svg" = $gistBadgeResult.Content
+        }
+    }
+
     if (-not $reportGist) {
         Write-ActionInfo "Creating initial Tests Report Gist"
         $createGistResp = Invoke-WebRequest -Headers $apiHeaders -Uri $gistsApiUrl -Method Post -Body (@{
-            public = $false
-            files = @{
-                $reportGistName = @{
-                    content = $reportData
-                }
-            }
+            public = $true ## Set thit to false to make it a Secret Gist
+            files = $gistFiles
         } | ConvertTo-Json)
         $createGist = $createGistResp.Content | ConvertFrom-Json -AsHashtable
         $reportGist = $createGist
@@ -267,11 +332,7 @@ function Publish-ToGist {
         Write-ActionInfo "Updating Tests Report Gist"
         $updateGistUrl = "$gistsApiUrl/$($reportGist.id)"
         $updateGistResp = Invoke-WebRequest -Headers $apiHeaders -Uri $updateGistUrl -Method Patch -Body (@{
-            files = @{
-                $reportGistName = @{
-                    content = $reportData
-                }
-            }
+            files = $gistFiles
         } | ConvertTo-Json)
 
         Write-ActionInfo "Update Response: $updateGistResp"
