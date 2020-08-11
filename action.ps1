@@ -145,7 +145,7 @@ if ($test_results_path) {
     $ghToken = Get-ActionInput -Name github_token -Required
     $ctx = Get-ActionContext
     $repo = Get-ActionRepo
-    $repoFullName = "$($repo.Owner)/$($repo.Name)"
+    $repoFullName = "$($repo.Owner)/$($repo.Repo)"
 
     Write-ActionInfo "Resolving REF"
     $ref = $ctx.Sha
