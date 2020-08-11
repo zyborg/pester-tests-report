@@ -1,9 +1,10 @@
 # pester-tests-report
+
 GitHub Action to run Pester tests and generate report attached to Workflow Run
 
 ---
 
-[![GitHub Workflow - CI](https://github.com/zyborg/pester-tests-report/workflows/CI/badge.svg)](https://github.com/zyborg/pester-tests-report/actions?workflow=test-action)
+[![GitHub Workflow - CI](https://github.com/zyborg/pester-tests-report/workflows/test-action/badge.svg)](https://github.com/zyborg/pester-tests-report/actions?workflow=test-action)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/zyborg/pester-tests-report)](https://github.com/zyborg/pester-tests-report/releases/latest)
 
 ---
@@ -11,3 +12,11 @@ GitHub Action to run Pester tests and generate report attached to Workflow Run
 This Action can be used to execute PowerShell Pester tests within a GitHub
 Workflow, as well as generate a Report from the test results and attach it
 to the Workflow Run as a Check Run.
+
+## Samples
+
+Here are some samples of the generated reports:
+
+<img src="docs/sample1.png" style="border: solid 3px gray" /><br />
+<img src="docs/sample2.png" style="border: solid 3px gray" /><br />
+<img src="docs/sample3.png" style="border: solid 3px gray" /><br />
