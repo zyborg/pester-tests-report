@@ -7,7 +7,7 @@ Set-Variable -Scope Script -Option Constant -Name EOL -Value ([System.Environmen
 Describe 'Set-ActionVariable' {
     $testCases = @(
         @{ Name = 'varName1'  ; Value = 'varValue1' }
-        @{ Name = 'var name 2'; Value = 'var value 2' }
+        @{ Name = 'var name 2'; Value = 'var value 2 BAD' }
         @{ Name = 'var,name;3'; Value = 'var,value;3'
             Expected = "::set-env name=var%2Cname%3B3::var,value;3$EOL" }
     )
@@ -38,5 +38,12 @@ Describe 'Add-ActionSecretMask' {
     It 'Given a valid -Secret' {
         $secret = 'f00B@r!'
         Add-ActionSecretMask $secret | Should -Be "::add-mask::$($secret)$EOL"
+    }
+}
+
+Describe 'Write-ActionDebug' -Skip {
+    It 'Given a valid -Message' {
+        $output = Write-ActionDebug 'This is a sample message'
+        $output | Should -Be "::debug::This is a sample message$EOL"
     }
 }
