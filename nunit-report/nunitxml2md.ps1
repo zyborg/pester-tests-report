@@ -4,7 +4,8 @@ param(
     [Parameter(Mandatory)]
     [string]$xmlFile,
     [string]$mdFile=$null,
-    [string]$xslFile=$null
+    [string]$xslFile=$null,
+    [hashtable]$xslParams=$null
 )
 
 if ($xmlFile -notmatch '^[/\\]') {
@@ -59,6 +60,12 @@ if (-not $script:xslt) {
 
 $script:list = [System.Xml.Xsl.XsltArgumentList]::new()
 $script:list.AddExtensionObject("urn:nuxml", [NUnitXML]::new())
+if ($xslParams) {
+    foreach ($xp in $xslParams.GetEnumerator()) {
+        $script:list.AddParam($xp.Key, [string]::Empty, $xp.Value)
+    }
+}
+
 $script:wrtr = [System.IO.StreamWriter]::new($mdFile)
 try {
     Write-Verbose "Transforming XML to MD"

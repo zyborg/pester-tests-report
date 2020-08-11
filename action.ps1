@@ -146,7 +146,11 @@ if ($test_results_path) {
     }
 
     $test_report_path = Join-Path $test_results_dir test-results.md
-    ./nunit-report/nunitxml2md.ps1 -Verbose -xmlFile $test_results_path -mdFile $test_report_path
+    ./nunit-report/nunitxml2md.ps1 -Verbose `
+        -xmlFile $test_results_path `
+        -mdFile $test_report_path -xslParams @{
+            reportTitle = $report_title
+        }
 
     $reportData = [System.IO.File]::ReadAllText($test_report_path)
 
@@ -186,7 +190,7 @@ if ($test_results_path) {
         conclusion = 'neutral'
         output     = @{
             title   = $report_title
-            summary = "This run completed at ``${[datetime]::Now}``"
+            summary = "This run completed at ``$([datetime]::Now)``"
             text    = $reportData
         }
     }
