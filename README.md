@@ -17,6 +17,8 @@ to the Workflow Run as a Check Run.
 
 Here are some samples of the generated reports:
 
-<img src="docs/sample1.png" style="border: solid 3px gray" /><br />
-<img src="docs/sample2.png" style="border: solid 3px gray" /><br />
-<img src="docs/sample3.png" style="border: solid 3px gray" /><br />
+<table style="border: solid 3px gray">
+<tr><td><img src="docs/sample1.png" /></td></tr>
+<tr><td><img src="docs/sample2.png" /></td></tr>
+<tr><td><img src="docs/sample3.png" /></td></tr>
+</table>
