@@ -91,6 +91,12 @@ inputs:
       GITHUB_TOKEN to authenticate against API calls to attach
       report to Workflow Run.
 
+  skip_check_run:
+    description: |
+      If true, will skip attaching the Tests Result report to
+      the Workflow Run using a Check Run.
+
+
   gist_name:
     description: |
       If this value is specifed, the Test Results Report will be
