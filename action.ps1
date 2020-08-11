@@ -114,7 +114,7 @@ else {
     $error_clixml_path = ''
     $result_clixml_path = Join-Path $test_results_dir pester-result.xml
 
-    $pesterResult = Invoke-Pester -Configuration $pesterConfig -ErrorVariable $pesterError
+    $script:pesterResult = Invoke-Pester -Configuration $pesterConfig -ErrorVariable $pesterError
     if ($pesterError) {
         Write-ActionWarning "Pester invocation produced error:"
         Write-ActionWarning $pesterError
@@ -309,12 +309,13 @@ function Publish-ToGist {
             default { 'yellow' }
         }
         $gist_badge_url = "https://img.shields.io/badge/$gist_badge_label-$gist_badge_message-$gist_badge_color"
+        Write-ActionInfo "Computed Badge URL: $gist_badge_url"
         $gistBadgeResult = Invoke-WebRequest $gist_badge_url -ErrorVariable $gistBadgeError
         if ($gistBadgeError) {
-            $gistFiles."$reportGistName_badge.txt" = @{ content = $gistBadgeError.Message }
+            $gistFiles."$($reportGistName)_badge.txt" = @{ content = $gistBadgeError.Message }
         }
         else {
-            $gistFiles."$reportGistName_badge.svg" = @{ content = $gistBadgeResult.Content }
+            $gistFiles."$($reportGistName)_badge.svg" = @{ content = $gistBadgeResult.Content }
         }
     }
 
