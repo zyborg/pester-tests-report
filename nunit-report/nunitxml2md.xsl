@@ -58,7 +58,7 @@ Expand the following summaries for more details:
 <xsl:variable name="passedCount" select="/test-results/@total - /test-results/@errors - /test-results/@failures - /test-results/@not-run - /test-results/@inconclusive - /test-results/@ignored - /test-results/@skipped - /test-results/@invalid" />
 
 &lt;details&gt;
-    &lt;summary&gt; Outcome: <xsl:value-of select="/test-rsults/test-suite/@result" />
+    &lt;summary&gt; Outcome: <xsl:value-of select="/test-rsults/test-suite/@result"
         /> | Total Tests: <xsl:value-of select="/test-results/@total"
         /> | Passed: <xsl:value-of select="$passedCount"
         /> | Failed: <xsl:value-of select="/test-results/@failures" />
