@@ -46,6 +46,12 @@ $test_results_dir = Join-Path $PWD _TMP
 $test_results_path = $inputs.test_results_path
 if ($test_results_path) {
     Write-ActionInfo "Test Results Path provided as input; skipping Pester tests"
+
+    $result_clixml_path = Get-ActionInput result_clixml_path
+    if ($result_clixml_path) {
+        $script:pesterResult = Import-Clixml $result_clixml_path
+        Write-ActionInfo "Pester Result CLIXML provided as input; loaded"
+    }
 }
 else {
     $full_names_filters = splitListInput $inputs.full_names_filters
