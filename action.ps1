@@ -8,7 +8,7 @@ $modulesToInstall = @(
     'Pester'
 )
 $modulesToInstall | ForEach-Object {
-    if (-not (Get-Module -ListAvailable $_)) {
+    if (-not (Get-Module -ListAvailable -All $_)) {
         Write-Output "Module [$_] not found, INSTALLING..."
         Install-Module $_ -Force
     }
