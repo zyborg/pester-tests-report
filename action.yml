@@ -6,7 +6,7 @@ name: pester-tests-report
 author: EBekker
 description: |
   Executes PowerShell Pester tests within a GitHub Workflow
-  and attaches a Tests Report to the Workflow Run.
+  and produces a Tests Report.
 
 ## Here you describe your *formal* inputs -- those that are
 ## documented and can be displayed by the marketplace.
