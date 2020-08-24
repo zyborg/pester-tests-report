@@ -43,6 +43,11 @@ $inputs = @{
 }
 
 $test_results_dir = Join-Path $PWD _TMP
+Write-ActionInfo "Creating test results space"
+if (-not (Test-Path -Path $test_results_dir -PathType Container)) {
+    mkdir $test_results_dir
+}
+
 $test_results_path = $inputs.test_results_path
 if ($test_results_path) {
     Write-ActionInfo "Test Results Path provided as input; skipping Pester tests"
@@ -104,11 +109,7 @@ else {
         $pesterConfig.Output.Verbosity = $output_level
     }
 
-    Write-ActionInfo "Creating test results space"
     $test_results_path = Join-Path $test_results_dir test-results.nunit.xml
-    if (-not (Test-Path -Path $test_results_dir -PathType Container)) {
-        mkdir $test_results_dir
-    }
 
     ## TODO: For now, only NUnit is supported in Pester 5.x
     ##$pesterConfig.TestResult.OutputFormat = ''
