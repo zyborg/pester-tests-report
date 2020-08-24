@@ -120,8 +120,9 @@ jobs:
       - name: copy test results
         shell: pwsh
         run: |
-          mkdir copy-of-tests
-          cp _TMP/* copy-of-tests
+          #mkdir copy-of-tests
+          #cp _TMP/* copy-of-tests
+          mv _TMP copy-of-tests
       
       - name: use this action, yet again
         id: testAction3
