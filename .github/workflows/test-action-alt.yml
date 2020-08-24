@@ -1,0 +1,38 @@
+
+name: test-action
+
+on:
+  push:
+  release:
+    types: published
+
+jobs:
+
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: checkout
+        uses: actions/checkout@v1
+
+      - name: generate my own test results
+        shell: pwsh
+        run: |
+            $ErrorActionPreference = "Stop"
+
+            Install-Module GitHubActions -Force
+            Install-Module Pester -Force
+
+            $test_results_path = 'my_own_test_results'
+            mkdir $test_results_path
+
+            Invoke-Pester tests -PassThru -OutputFormat "NUnitXml" -OutputFile "$test_results_path/pester-test-results.nunit.xml" -Verbose -ErrorAction "Stop"
+
+      - name: use this action, with existing test results
+        id: testAction3
+        uses: ./
+        with:
+          test_results_path: my_own_test_results/pester-test-results.nunit.xml
+          report_name: MyOwnTestResults
+          report_title: My Own Test Results
+          github_token: ${{ secrets.GITHUB_TOKEN }}
