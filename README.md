@@ -17,10 +17,14 @@ Check out the [usage](#usage) below.
 
 ## Samples
 
-Here we see a badge generated along with the _Gist-based_ Tests Report as part
-of a GitHub Workflow associated with this project.
+Here we see some badges generated along with links to the _Gist-based_
+Tests Report as part of a GitHub Workflow
+[associated](https://github.com/zyborg/pester-tests-report/actions/runs/298169540/workflow#L138)
+with this project.
 
-[![Example Pester Tests Badge](https://gist.github.com/ebekker/dff5ae43943226d800cd1ee891dc889b/raw/pester-tests-report_GHAction_test1.md_badge.svg)](https://gist.github.com/ebekker/dff5ae43943226d800cd1ee891dc889b)
+* [![Example Pester Tests Badge](https://gist.github.com/ebekker/9158b8c9a9999270ef482faae6f4a742/raw/pester-tests-report_Marketplace_GHAction_test1.md_badge.svg)](https://gist.github.com/ebekker/9158b8c9a9999270ef482faae6f4a742#pester-tests-report_Marketplace_GHAction_test1.md)
+* [![Example Pester Tests Badge](https://gist.github.com/ebekker/5e97f7385f1c7812118d39306b938cd0/raw/pester-tests-report_Marketplace_GHAction_test2.md_badge.svg)](https://gist.github.com/ebekker/5e97f7385f1c7812118d39306b938cd0#pester-tests-report_Marketplace_GHAction_test2.md)
+* [![Example Pester Tests Badge](https://gist.github.com/ebekker/dff5ae43943226d800cd1ee891dc889b/raw/pester-tests-report_GHAction_test1.md_badge.svg)](https://gist.github.com/ebekker/dff5ae43943226d800cd1ee891dc889b)
 
 And here are some samples of the actual generated reports:
 
