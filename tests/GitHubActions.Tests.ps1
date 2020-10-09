@@ -83,7 +83,7 @@ Describe 'Get-ActionInput' {
     }
 }
 
-Describe 'Get-ActionInputs' {
+Describe 'Get-ActionInputs' -Tag sometimes_fails {
     [System.Environment]::SetEnvironmentVariable('INPUT_INPUT1', 'Value 1')
     [System.Environment]::SetEnvironmentVariable('INPUT_INPUT3', 'Value 3')
 

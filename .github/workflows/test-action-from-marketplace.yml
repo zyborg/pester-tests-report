@@ -144,6 +144,18 @@ jobs:
           report_title: Subset of Tests
           github_token: ${{ secrets.GITHUB_TOKEN }}
           gist_token: ${{ secrets.GIST_TOKEN }}
+          gist_badge_label: Tests %PassedCount%/%FailedCount%
+
+      - name: use this action, for another Gist report
+        id: testAction5
+        uses: zyborg/pester-tests-report@v1
+        with:
+          exclude_tags: sometimes_fails
+          report_name: Smaller Set of Tests
+          gist_name: pester-tests-report_GHAction_test2.md
+          report_title: Smaller Subset of Tests
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          gist_token: ${{ secrets.GIST_TOKEN }}
           gist_badge_label: Tests %ExecutedAt%
 
       - name: dump results, again
