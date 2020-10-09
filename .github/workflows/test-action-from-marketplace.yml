@@ -140,7 +140,7 @@ jobs:
         uses: zyborg/pester-tests-report@v1
         with:
           report_name: Small Set of Tests
-          gist_name: pester-tests-report_GHAction_test1.md
+          gist_name: pester-tests-report_Marketplace_GHAction_test1.md
           report_title: Subset of Tests
           github_token: ${{ secrets.GITHUB_TOKEN }}
           gist_token: ${{ secrets.GIST_TOKEN }}
@@ -152,7 +152,7 @@ jobs:
         with:
           exclude_tags: sometimes_fails
           report_name: Smaller Set of Tests
-          gist_name: pester-tests-report_GHAction_test2.md
+          gist_name: pester-tests-report_Marketplace_GHAction_test2.md
           report_title: Smaller Subset of Tests
           github_token: ${{ secrets.GITHUB_TOKEN }}
           gist_token: ${{ secrets.GIST_TOKEN }}
