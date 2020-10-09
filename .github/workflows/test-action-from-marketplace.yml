@@ -144,7 +144,7 @@ jobs:
           report_title: Subset of Tests
           github_token: ${{ secrets.GITHUB_TOKEN }}
           gist_token: ${{ secrets.GIST_TOKEN }}
-          gist_badge_label: Tests %PassedCount%/%FailedCount%
+          gist_badge_label: Tests %PassedCount%/%TotalCount%
 
       - name: use this action, for another Gist report
         id: testAction5
