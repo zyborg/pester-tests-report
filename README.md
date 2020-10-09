@@ -17,7 +17,12 @@ Check out the [usage](#usage) below.
 
 ## Samples
 
-Here are some samples of the generated reports:
+Here we see a badge generated along with the _Gist-based_ Tests Report as part
+of a GitHub Workflow associated with this project.
+
+[![Example Pester Tests Badge](https://gist.github.com/ebekker/dff5ae43943226d800cd1ee891dc889b/raw/pester-tests-report_GHAction_test1.md_badge.svg)](https://gist.github.com/ebekker/dff5ae43943226d800cd1ee891dc889b)
+
+And here are some samples of the actual generated reports:
 
 <table border="2">
     <tr><td><img src="docs/sample1.png" /></td></tr>
@@ -47,7 +52,7 @@ jobs:
     steps:
       - name: test module
         id: test_module
-        uses: zyborg/pester-tests-report@v1.1.0
+        uses: zyborg/pester-tests-report@v1
         with:
           include_paths: tests
           exclude_paths: tests/powershell1,tests/powershell2
