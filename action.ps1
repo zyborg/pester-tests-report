@@ -64,6 +64,7 @@ else {
     $exclude_paths      = splitListInput $inputs.exclude_paths
     $include_tags       = splitListInput $inputs.include_tags
     $exclude_tags       = splitListInput $inputs.exclude_tags
+    $output_level       = splitListInput $inputs.output_level
 
     Write-ActionInfo "Running Pester tests with following:"
     Write-ActionInfo "  * realtive to PWD: $PWD"
@@ -104,7 +105,7 @@ else {
     }
     else { Write-ActionInfo "  * Default exclude_tags"}
 
-    if ($inputs.output_level) {
+    if ($output_level) {
         Write-ActionInfo "  * output_level: $output_level"
         $pesterConfig.Output.Verbosity = $output_level
     }
