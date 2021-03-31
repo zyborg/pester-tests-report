@@ -40,6 +40,7 @@ $inputs = @{
     gist_token         = Get-ActionInput gist_token
     gist_badge_label   = Get-ActionInput gist_badge_label
     gist_badge_message = Get-ActionInput gist_badge_message
+    tests_fail_step    = Get-ActionInput tests_fail_step
 }
 
 $test_results_dir = Join-Path $PWD _TMP
@@ -107,6 +108,11 @@ else {
     if ($inputs.output_level) {
         Write-ActionInfo "  * output_level: $output_level"
         $pesterConfig.Output.Verbosity = $output_level
+    }
+
+    if ($inputs.tests_fail_step) {
+        Write-ActionInfo "  * tests_fail_step: true"
+        $pesterConfig.Run.Exit = $true
     }
 
     $test_results_path = Join-Path $test_results_dir test-results.nunit.xml

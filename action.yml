@@ -132,6 +132,12 @@ inputs:
       You can control which account is used to actually store the state by
       generating a token associated with the target account.
 
+  tests_fail_step:
+    description: |
+      When set to `true`, will cause the step to fail if one or more tests 
+      fails. The default is `false`.
+    required: false
+
 
 ## Here you describe your *formal* outputs.
 outputs:
