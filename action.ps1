@@ -112,7 +112,6 @@ else {
 
     if ($inputs.tests_fail_step) {
         Write-ActionInfo "  * tests_fail_step: true"
-        $pesterConfig.Run.Exit = $true
     }
 
     $test_results_path = Join-Path $test_results_dir test-results.nunit.xml
@@ -143,6 +142,9 @@ else {
     }
     if ($error_clixml_path) {
         Set-ActionOutput -Name error_clixml_path -Value $error_clixml_path
+    }
+    if ($inputs.tests_fail_step -and ($pesterResult.FailedCount -gt 0)) {
+        $script:stepShouldFail = $true
     }
 
     Set-ActionOutput -Name result_clixml_path -Value $result_clixml_path
@@ -366,4 +368,9 @@ if ($test_results_path) {
     if ($inputs.gist_name -and $inputs.gist_token) {
         Publish-ToGist -ReportData $reportData
     }
+}
+
+if ($stepShouldFail) {
+    Write-ActionInfo "Throwing error as one or more tests failed 'tests_fail_step' was true"
+    throw "Throwing error as one or more tests failed 'tests_fail_step' was true"
 }
