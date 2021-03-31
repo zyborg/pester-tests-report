@@ -134,8 +134,7 @@ inputs:
 
   tests_fail_step:
     description: |
-      When set to `true`, will cause the step to fail if one or more tests 
-      fails. The default is `false`.
+      If true, will cause the step to fail if one or more tests fails.
     required: false
 
 

@@ -99,7 +99,7 @@ This Action defines the following formal inputs.
 | **`gist_badge_label`**   | false | If specified, the Test Report Gist will also include an adjacent badge rendered with the status of the associated Test Report and and label content of this input.  In addition to any static text you can provide _escape tokens_ of the form `%name%` where name can be the name of any field returned from a Pester Result, such as `ExecutedAt` or `Result`.  If you want a literal percent, just specify an empty name as in `%%`.
 | **`gist_badge_message`** | false | If Gist badge generation is enabled by providing a value for the `gist_badge_label` input, this input allows you to override the default message on the badge, which is equivalent to the the Pester Result `Status` such as `Failed` or `Passed`.  As with the label input, you can specify escape tokens in addition to literal text.  See the label input description for more details.
 | **`gist_token`**         | false | GitHub OAuth/PAT token to be used for accessing Gist to store test results report. The integrated GITHUB_TOKEN that is normally accessible during a Workflow does not include read/write permissions to associated Gists, therefore a separate token is needed. You can control which account is used to actually store the state by generating a token associated with the target account.
-
+| **`tests_fail_step`**    | false | If true, will cause the step to fail if one or more tests fails.
 
 
 ### Outputs
