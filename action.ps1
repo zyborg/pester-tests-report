@@ -371,6 +371,6 @@ if ($test_results_path) {
 }
 
 if ($stepShouldFail) {
-    Write-ActionInfo "Throwing error as one or more tests failed 'tests_fail_step' was true"
-    throw "Throwing error as one or more tests failed 'tests_fail_step' was true"
+    Write-ActionInfo "Thowing error as ne or more tests failed and 'tests_fail_step' was true."
+    throw "One or more tests failed."
 }
