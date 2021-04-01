@@ -229,7 +229,7 @@ function Build-CoverageReport {
     }
 
     $script:coverage_summary_path = Join-Path $test_results_dir Summary.txt
-    $script:coverage_report_path = Join-Path $test_results_dir Summary.html
+    $script:coverage_report_path = Join-Path $test_results_dir summary.html
     $script:coverage_badge_path = Join-Path $test_results_dir badge_shieldsio_linecoverage_lightgrey.svg
     dotnet tool install -g dotnet-reportgenerator-globaltool
     $sourceDirs = ""
@@ -307,7 +307,7 @@ function Publish-ToGist {
 
     $gistsApiUrl = "https://api.github.com/gists"
     $apiHeaders = @{
-        Accept        = "application/vnd.github.v2+json"
+        Accept        = "application/vnd.github.v3+json"
         Authorization = "token $gist_token"
     }
 
