@@ -40,6 +40,11 @@ $inputs = @{
     gist_token         = Get-ActionInput gist_token
     gist_badge_label   = Get-ActionInput gist_badge_label
     gist_badge_message = Get-ActionInput gist_badge_message
+    coverage_paths     = Get-ActionInput coverage_paths
+    coverage_report_name = Get-ActionInput coverage_report_name
+    coverage_report_title = Get-ActionInput coverage_report_title
+    coverage_gist      = Get-ActionInput coverage_gist
+    coverage_gist_badge = Get-ActionInput coverage_gist_badge
 }
 
 $test_results_dir = Join-Path $PWD _TMP
@@ -64,6 +69,7 @@ else {
     $exclude_paths      = splitListInput $inputs.exclude_paths
     $include_tags       = splitListInput $inputs.include_tags
     $exclude_tags       = splitListInput $inputs.exclude_tags
+    $coverage_paths     = splitListInput $inputs.coverage_paths
 
     Write-ActionInfo "Running Pester tests with following:"
     Write-ActionInfo "  * realtive to PWD: $PWD"
@@ -107,6 +113,15 @@ else {
     if ($inputs.output_level) {
         Write-ActionInfo "  * output_level: $output_level"
         $pesterConfig.Output.Verbosity = $output_level
+    }
+
+    if ($coverage_paths) {
+        Write-ActionInfo "  * coverage_paths:"
+        writeListInput $coverage_paths
+        $pesterConfig.CodeCoverage.Enabled = $true
+        $pesterConfig.CodeCoverage.Path = $coverage_paths
+        $coverage_results_path = Join-Path $test_results_dir coverage.xml
+        $pesterConfig.CodeCoverage.OutputPath = $coverage_results_path
     }
 
     $test_results_path = Join-Path $test_results_dir test-results.nunit.xml
@@ -202,9 +217,28 @@ function Build-MarkdownReport {
         }
 }
 
+function Build-CoverageReport {
+    $script:coverage_report_name = $inputs.coverage_report_name
+    $script:coverage_report_title = $inputs.coverage_report_title
+
+    if (-not $script:coverage_report_name) {
+        $script:coverage_report_name = "COVERAGE_RESULTS_$([datetime]::Now.ToString('yyyyMMdd_hhmmss'))"
+    }
+    if (-not $coverage_report_title) {
+        $script:coverage_report_title = $report_name
+    }
+
+    $script:coverage_report_path = Join-Path $test_results_dir coverage.html
+    $script:coverage_badge_path = Join-Path $test_results_dir coverage.svg
+    dotnet tool install -g dotnet-reportgenerator-globaltool
+    reportgenerator -reports:$script:coverage_results_path -targetdir:$test_results_dir -reporttypes:HtmlInline;Badges -title:$coverage_report_title
+}
+
 function Publish-ToCheckRun {
     param(
-        [string]$reportData
+        [string]$reportData,
+        [string]$reportName,
+        [string]$reportTitle
     )
 
     Write-ActionInfo "Publishing Report to GH Workflow"
@@ -238,12 +272,12 @@ function Publish-ToCheckRun {
         Authorization = "token $ghToken"
     }
     $bdy = @{
-        name       = $report_name
+        name       = $reportName
         head_sha   = $ref
         status     = 'completed'
         conclusion = 'neutral'
         output     = @{
-            title   = $report_title
+            title   = $reportTitle
             summary = "This run completed at ``$([datetime]::Now)``"
             text    = $reportData
         }
@@ -253,7 +287,8 @@ function Publish-ToCheckRun {
 
 function Publish-ToGist {
     param(
-        [string]$reportData
+        [string]$reportData,
+        [string]$coverageData
     )
 
     Write-ActionInfo "Publishing Report to GH Workflow"
@@ -325,6 +360,13 @@ function Publish-ToGist {
             $gistFiles."$($reportGistName)_badge.svg" = @{ content = $gistBadgeResult.Content }
         }
     }
+    if ($coverageData) {
+        $gistFile."$([io.path]::GetFileNameWithoutExtension($reportGistName))_Coverage.html" = @{ content = $coverageData }
+    }
+    if ($input.coverage_gist_badge) {
+        $coverageBadgeData = [System.IO.File]::ReadAllText($coverage_badge_path)
+        $gistFile."$([io.path]::GetFileNameWithoutExtension($reportGistName))_Coverage_badge.svg" = @{ content = $coverageBadgeData }
+    }
 
     if (-not $reportGist) {
         Write-ActionInfo "Creating initial Tests Report Gist"
@@ -354,10 +396,26 @@ if ($test_results_path) {
 
     $reportData = [System.IO.File]::ReadAllText($test_report_path)
 
+    if ($coverage_results_path) {
+        Set-ActionOutput -Name coverage_results_path -Value $coverage_results_path
+
+        Build-CoverageReport
+
+        $coverageData = [System.IO.File]::ReadAllText($coverage_report_path)
+    }
+
     if ($inputs.skip_check_run -ne $true) {
-        Publish-ToCheckRun -ReportData $reportData
+        Publish-ToCheckRun -ReportData $reportData -ReportName $report_name -ReportTitle $report_title
+        if ($coverage_results_path) {
+            Publish-ToCheckRun -ReportData $coverageData -ReportName $coverage_report_name -ReportTitle $coverge_report_title
+        }
     }
     if ($inputs.gist_name -and $inputs.gist_token) {
-        Publish-ToGist -ReportData $reportData
+        if ($inputs.coverage_gist) {
+            $coverageData = [System.IO.File]::ReadAllText($coverage_report_path)
+            Publish-ToGist -ReportData $reportData -CoverageData $coverageData
+        } else {
+            Publish-ToGist -ReportData $reportData
+        }
     }
 }
