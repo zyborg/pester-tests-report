@@ -282,6 +282,7 @@ function Publish-ToCheckRun {
             text    = $reportData
         }
     }
+    Write-ActionInfo "WR Body $($bdy | ConvertTo-Json)"
     Invoke-WebRequest -Headers $hdr $url -Method Post -Body ($bdy | ConvertTo-Json)
 }
 
