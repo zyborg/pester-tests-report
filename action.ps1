@@ -290,7 +290,6 @@ function Publish-ToCheckRun {
             text    = $reportData
         }
     }
-    Write-ActionInfo "WR Body $($bdy | ConvertTo-Json)"
     Invoke-WebRequest -Headers $hdr $url -Method Post -Body ($bdy | ConvertTo-Json)
 }
 
@@ -376,7 +375,7 @@ function Publish-ToGist {
         $coverageBadgeData = [System.IO.File]::ReadAllText($coverage_badge_path)
         $gistFiles."$([io.path]::GetFileNameWithoutExtension($reportGistName))_Coverage_badge.svg" = @{ content = $coverageBadgeData }
     }
-
+    Write-ActionInfo "Gist JSON $($gistFiles | ConvertTo-Json)"
     if (-not $reportGist) {
         Write-ActionInfo "Creating initial Tests Report Gist"
         $createGistResp = Invoke-WebRequest -Headers $apiHeaders -Uri $gistsApiUrl -Method Post -Body (@{
