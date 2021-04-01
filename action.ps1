@@ -228,6 +228,7 @@ function Build-CoverageReport {
         $script:coverage_report_title = $report_name
     }
 
+    $script:coverage_summary_path = Join-Path $test_results_dir summary.txt
     $script:coverage_report_path = Join-Path $test_results_dir index.html
     $script:coverage_badge_path = Join-Path $test_results_dir badge_combined.svg
     dotnet tool install -g dotnet-reportgenerator-globaltool
@@ -409,19 +410,19 @@ if ($test_results_path) {
 
         Build-CoverageReport
 
-        $coverageData = [System.IO.File]::ReadAllText($coverage_report_path)
+        $coverageSummaryData = [System.IO.File]::ReadAllText($coverage_summary_path)
     }
 
     if ($inputs.skip_check_run -ne $true) {
         Publish-ToCheckRun -ReportData $reportData -ReportName $report_name -ReportTitle $report_title
         if ($coverage_results_path) {
-            Publish-ToCheckRun -ReportData $coverageData -ReportName $coverage_report_name -ReportTitle $coverage_report_title
+            Publish-ToCheckRun -ReportData $coverageSummaryData -ReportName $coverage_report_name -ReportTitle $coverage_report_title
         }
     }
     if ($inputs.gist_name -and $inputs.gist_token) {
         if ($inputs.coverage_gist) {
-            $coverageData = [System.IO.File]::ReadAllText($coverage_report_path)
-            Publish-ToGist -ReportData $reportData -CoverageData $coverageData
+            $coverageReportData = [System.IO.File]::ReadAllText($coverage_report_path)
+            Publish-ToGist -ReportData $reportData -CoverageData $coverageReportData
         } else {
             Publish-ToGist -ReportData $reportData
         }
