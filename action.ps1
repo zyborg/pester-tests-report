@@ -231,7 +231,14 @@ function Build-CoverageReport {
     $script:coverage_report_path = Join-Path $test_results_dir index.html
     $script:coverage_badge_path = Join-Path $test_results_dir badge_combined.svg
     dotnet tool install -g dotnet-reportgenerator-globaltool
-    reportgenerator -reports:"$script:coverage_results_path" -targetdir:"$test_results_dir" -reporttypes:"HtmlInline;Badges" -title:"$coverage_report_title"
+    $sourceDirs = ""
+    foreach ($path in $coverage_paths) {
+        if ($sourceDirs) {
+            $sourceDirs += ";"
+        }
+        $sourceDirs += Split-Path $path
+    }
+    reportgenerator -reports:"$script:coverage_results_path" -targetdir:"$test_results_dir" -reporttypes:"HtmlInline_AzurePipelines_Dark;Badges;TextSummary" -title:"$coverage_report_title" -sourcedirs:"$SourceDirs"
 }
 
 function Publish-ToCheckRun {
