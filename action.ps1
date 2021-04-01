@@ -228,8 +228,8 @@ function Build-CoverageReport {
         $script:coverage_report_title = $report_name
     }
 
-    $script:coverage_report_path = Join-Path $test_results_dir coverage.html
-    $script:coverage_badge_path = Join-Path $test_results_dir coverage.svg
+    $script:coverage_report_path = Join-Path $test_results_dir index.html
+    $script:coverage_badge_path = Join-Path $test_results_dir badge_combined.svg
     dotnet tool install -g dotnet-reportgenerator-globaltool
     reportgenerator -reports:"$script:coverage_results_path" -targetdir:"$test_results_dir" -reporttypes:"HtmlInline;Badges" -title:"$coverage_report_title"
 }
