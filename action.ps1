@@ -231,7 +231,7 @@ function Build-CoverageReport {
     $script:coverage_report_path = Join-Path $test_results_dir coverage.html
     $script:coverage_badge_path = Join-Path $test_results_dir coverage.svg
     dotnet tool install -g dotnet-reportgenerator-globaltool
-    reportgenerator -reports:$script:coverage_results_path -targetdir:$test_results_dir -reporttypes:HtmlInline;Badges -title:$coverage_report_title
+    reportgenerator -reports:"$script:coverage_results_path" -targetdir:"$test_results_dir" -reporttypes:"HtmlInline;Badges" -title:"$coverage_report_title"
 }
 
 function Publish-ToCheckRun {
@@ -407,7 +407,7 @@ if ($test_results_path) {
     if ($inputs.skip_check_run -ne $true) {
         Publish-ToCheckRun -ReportData $reportData -ReportName $report_name -ReportTitle $report_title
         if ($coverage_results_path) {
-            Publish-ToCheckRun -ReportData $coverageData -ReportName $coverage_report_name -ReportTitle $coverge_report_title
+            Publish-ToCheckRun -ReportData $coverageData -ReportName $coverage_report_name -ReportTitle $coverage_report_title
         }
     }
     if ($inputs.gist_name -and $inputs.gist_token) {
