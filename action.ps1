@@ -371,7 +371,7 @@ function Publish-ToGist {
     if ($coverageData) {
         $gistFiles."$([io.path]::GetFileNameWithoutExtension($reportGistName))_Coverage.html" = @{ content = $coverageData }
     }
-    if ($input.coverage_gist_badge) {
+    if ($inputs.coverage_gist_badge) {
         $coverageBadgeData = [System.IO.File]::ReadAllText($coverage_badge_path)
         $gistFiles."$([io.path]::GetFileNameWithoutExtension($reportGistName))_Coverage_badge.svg" = @{ content = $coverageBadgeData }
     }
