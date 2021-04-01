@@ -40,6 +40,7 @@ $inputs = @{
     gist_token         = Get-ActionInput gist_token
     gist_badge_label   = Get-ActionInput gist_badge_label
     gist_badge_message = Get-ActionInput gist_badge_message
+    tests_fail_step    = Get-ActionInput tests_fail_step
 }
 
 $test_results_dir = Join-Path $PWD _TMP
@@ -110,6 +111,10 @@ else {
         $pesterConfig.Output.Verbosity = $output_level
     }
 
+    if ($inputs.tests_fail_step) {
+        Write-ActionInfo "  * tests_fail_step: true"
+    }
+
     $test_results_path = Join-Path $test_results_dir test-results.nunit.xml
 
     ## TODO: For now, only NUnit is supported in Pester 5.x
@@ -138,6 +143,9 @@ else {
     }
     if ($error_clixml_path) {
         Set-ActionOutput -Name error_clixml_path -Value $error_clixml_path
+    }
+    if ($inputs.tests_fail_step -and ($pesterResult.FailedCount -gt 0)) {
+        $script:stepShouldFail = $true
     }
 
     Set-ActionOutput -Name result_clixml_path -Value $result_clixml_path
@@ -361,4 +369,9 @@ if ($test_results_path) {
     if ($inputs.gist_name -and $inputs.gist_token) {
         Publish-ToGist -ReportData $reportData
     }
+}
+
+if ($stepShouldFail) {
+    Write-ActionInfo "Thowing error as ne or more tests failed and 'tests_fail_step' was true."
+    throw "One or more tests failed."
 }
