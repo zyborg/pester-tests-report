@@ -210,7 +210,8 @@ outputs:
     description: Total number of tests failed.
 
   coverage_results_path:
-    description: Path to the code coverage results file.
+    description: |
+      Path to the code coverage results file in JaCoCo XML format.
 
 
 branding:
