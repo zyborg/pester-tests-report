@@ -229,8 +229,8 @@ function Build-CoverageReport {
     }
 
     $script:coverage_summary_path = Join-Path $test_results_dir Summary.txt
-    $script:coverage_report_path = Join-Path $test_results_dir index.html
-    $script:coverage_badge_path = Join-Path $test_results_dir badge_combined.svg
+    $script:coverage_report_path = Join-Path $test_results_dir Summary.html
+    $script:coverage_badge_path = Join-Path $test_results_dir badge_shieldsio_linecoverage_lightgrey.svg
     dotnet tool install -g dotnet-reportgenerator-globaltool
     $sourceDirs = ""
     foreach ($path in $coverage_paths) {
@@ -239,7 +239,7 @@ function Build-CoverageReport {
         }
         $sourceDirs += Split-Path $path
     }
-    reportgenerator -reports:"$script:coverage_results_path" -targetdir:"$test_results_dir" -reporttypes:"HtmlInline_AzurePipelines_Dark;Badges;TextSummary" -title:"$coverage_report_title" -sourcedirs:"$SourceDirs"
+    reportgenerator -reports:"$script:coverage_results_path" -targetdir:"$test_results_dir" -reporttypes:"HtmlSummary;Badges;TextSummary" -title:"$coverage_report_title" -sourcedirs:"$SourceDirs"
 }
 
 function Publish-ToCheckRun {
@@ -409,19 +409,19 @@ if ($test_results_path) {
 
         Build-CoverageReport
 
+        $coverageReportData = [System.IO.File]::ReadAllText($coverage_report_path)
         $coverageSummaryData = [System.IO.File]::ReadAllText($coverage_summary_path)
     }
 
     if ($inputs.skip_check_run -ne $true) {
         Publish-ToCheckRun -ReportData $reportData -ReportName $report_name -ReportTitle $report_title
         if ($coverage_results_path) {
-            Publish-ToCheckRun -ReportData $coverageSummaryData -ReportName $coverage_report_name -ReportTitle $coverage_report_title
+            Publish-ToCheckRun -ReportData $coverageReportData -ReportName $coverage_report_name -ReportTitle $coverage_report_title
         }
     }
     if ($inputs.gist_name -and $inputs.gist_token) {
         if ($inputs.coverage_gist) {
-            $coverageReportData = [System.IO.File]::ReadAllText($coverage_report_path)
-            Publish-ToGist -ReportData $reportData -CoverageData $coverageSummaryData
+            Publish-ToGist -ReportData $reportData -CoverageData $coverageReportData
         } else {
             Publish-ToGist -ReportData $reportData
         }
