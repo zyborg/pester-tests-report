@@ -218,6 +218,7 @@ function Build-MarkdownReport {
 }
 
 function Build-CoverageReport {
+    Write-ActionInfo "Building human-readable code-coverage report"
     $script:coverage_report_name = $inputs.coverage_report_name
     $script:coverage_report_title = $inputs.coverage_report_title
 
@@ -229,7 +230,6 @@ function Build-CoverageReport {
     }
 
     $script:coverage_summary_path = Join-Path $test_results_dir Summary.txt
-    $script:coverage_report_path = Join-Path $test_results_dir summary.html
     $script:coverage_badge_path = Join-Path $test_results_dir badge_shieldsio_linecoverage_lightgrey.svg
     dotnet tool install -g dotnet-reportgenerator-globaltool
     $sourceDirs = ""
@@ -239,7 +239,7 @@ function Build-CoverageReport {
         }
         $sourceDirs += Split-Path $path
     }
-    reportgenerator -reports:"$script:coverage_results_path" -targetdir:"$test_results_dir" -reporttypes:"HtmlSummary;Badges;TextSummary" -title:"$coverage_report_title" -sourcedirs:"$SourceDirs"
+    reportgenerator -reports:"$script:coverage_results_path" -targetdir:"$test_results_dir" -reporttypes:"Badges;TextSummary" -title:"$coverage_report_title" -sourcedirs:"$SourceDirs"
 }
 
 function Publish-ToCheckRun {
@@ -375,7 +375,7 @@ function Publish-ToGist {
         $coverageBadgeData = [System.IO.File]::ReadAllText($coverage_badge_path)
         $gistFiles."$([io.path]::GetFileNameWithoutExtension($reportGistName))_Coverage_badge.svg" = @{ content = $coverageBadgeData }
     }
-    Write-ActionInfo "Gist JSON $($gistFiles | ConvertTo-Json)"
+
     if (-not $reportGist) {
         Write-ActionInfo "Creating initial Tests Report Gist"
         $createGistResp = Invoke-WebRequest -Headers $apiHeaders -Uri $gistsApiUrl -Method Post -Body (@{
@@ -409,7 +409,6 @@ if ($test_results_path) {
 
         Build-CoverageReport
 
-        $coverageReportData = [System.IO.File]::ReadAllText($coverage_report_path)
         $coverageSummaryData = [System.IO.File]::ReadAllText($coverage_summary_path)
     }
 
@@ -421,7 +420,7 @@ if ($test_results_path) {
     }
     if ($inputs.gist_name -and $inputs.gist_token) {
         if ($inputs.coverage_gist) {
-            Publish-ToGist -ReportData $reportData -CoverageData $coverageReportData
+            Publish-ToGist -ReportData $reportData -CoverageData $coverageSummaryData
         } else {
             Publish-ToGist -ReportData $reportData
         }
