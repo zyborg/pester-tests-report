@@ -421,7 +421,7 @@ if ($test_results_path) {
     if ($inputs.gist_name -and $inputs.gist_token) {
         if ($inputs.coverage_gist) {
             $coverageReportData = [System.IO.File]::ReadAllText($coverage_report_path)
-            Publish-ToGist -ReportData $reportData -CoverageData $coverageReportData
+            Publish-ToGist -ReportData $reportData -CoverageData $coverageSummaryData
         } else {
             Publish-ToGist -ReportData $reportData
         }
