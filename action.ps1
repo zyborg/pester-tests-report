@@ -118,8 +118,12 @@ else {
     if ($coverage_paths) {
         Write-ActionInfo "  * coverage_paths:"
         writeListInput $coverage_paths
+        $coverageFiles = @()
+        foreach ($path in $coverage_paths) {
+            $coverageFiles +=  Get-ChildItem $Path -Recurse -Include @("*.ps1","*.psm1") -Exclude "*.Tests.ps1"
+        }
         $pesterConfig.CodeCoverage.Enabled = $true
-        $pesterConfig.CodeCoverage.Path = $coverage_paths
+        $pesterConfig.CodeCoverage.Path = $coverageFiles
         $coverage_results_path = Join-Path $test_results_dir coverage.xml
         $pesterConfig.CodeCoverage.OutputPath = $coverage_results_path
     }

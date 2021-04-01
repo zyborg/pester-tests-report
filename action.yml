@@ -134,10 +134,9 @@ inputs:
 
   coverage_paths:
     description: |
-      Comma-separated list of one or more files or directories
-      to scan for code coverage, relative to the root of the project. You 
-      must have run `actions/setup-dotnet` prior to running this action 
-      if you wish to use code coverage.
+      Comma-separated list of one or more directories to scan for code 
+      coverage, relative to the root of the project. Will include all .ps1
+      and .psm1 files under these directories recursively.
     required: false
 
   coverage_report_name:
