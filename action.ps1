@@ -228,7 +228,7 @@ function Build-CoverageReport {
         $script:coverage_report_title = $report_name
     }
 
-    $script:coverage_summary_path = Join-Path $test_results_dir summary.txt
+    $script:coverage_summary_path = Join-Path $test_results_dir Summary.txt
     $script:coverage_report_path = Join-Path $test_results_dir index.html
     $script:coverage_badge_path = Join-Path $test_results_dir badge_combined.svg
     dotnet tool install -g dotnet-reportgenerator-globaltool
@@ -370,11 +370,11 @@ function Publish-ToGist {
         }
     }
     if ($coverageData) {
-        $gistFile."$([io.path]::GetFileNameWithoutExtension($reportGistName))_Coverage.html" = @{ content = $coverageData }
+        $gistFiles."$([io.path]::GetFileNameWithoutExtension($reportGistName))_Coverage.html" = @{ content = $coverageData }
     }
     if ($input.coverage_gist_badge) {
         $coverageBadgeData = [System.IO.File]::ReadAllText($coverage_badge_path)
-        $gistFile."$([io.path]::GetFileNameWithoutExtension($reportGistName))_Coverage_badge.svg" = @{ content = $coverageBadgeData }
+        $gistFiles."$([io.path]::GetFileNameWithoutExtension($reportGistName))_Coverage_badge.svg" = @{ content = $coverageBadgeData }
     }
 
     if (-not $reportGist) {
