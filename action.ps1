@@ -128,6 +128,8 @@ else {
         $pesterConfig.CodeCoverage.Path = $coverageFiles
         $coverage_results_path = Join-Path $test_results_dir coverage.xml
         $pesterConfig.CodeCoverage.OutputPath = $coverage_results_path
+    }
+
     if ($inputs.tests_fail_step) {
         Write-ActionInfo "  * tests_fail_step: true"
     }
