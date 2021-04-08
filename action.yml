@@ -165,6 +165,11 @@ inputs:
       If true, render a coverage badge and add it to the gist specified in
       `gist_name`.
     required: false
+  tests_fail_step:
+    description: |
+      If true, will cause the step to fail if one or more tests fails.
+    required: false
+
 
 ## Here you describe your *formal* outputs.
 outputs:

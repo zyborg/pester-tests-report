@@ -45,6 +45,7 @@ $inputs = @{
     coverage_report_title = Get-ActionInput coverage_report_title
     coverage_gist      = Get-ActionInput coverage_gist
     coverage_gist_badge = Get-ActionInput coverage_gist_badge
+    tests_fail_step    = Get-ActionInput tests_fail_step
 }
 
 $test_results_dir = Join-Path $PWD _TMP
@@ -70,6 +71,7 @@ else {
     $include_tags       = splitListInput $inputs.include_tags
     $exclude_tags       = splitListInput $inputs.exclude_tags
     $coverage_paths     = splitListInput $inputs.coverage_paths
+    $output_level       = splitListInput $inputs.output_level
 
     Write-ActionInfo "Running Pester tests with following:"
     Write-ActionInfo "  * realtive to PWD: $PWD"
@@ -110,7 +112,7 @@ else {
     }
     else { Write-ActionInfo "  * Default exclude_tags"}
 
-    if ($inputs.output_level) {
+    if ($output_level) {
         Write-ActionInfo "  * output_level: $output_level"
         $pesterConfig.Output.Verbosity = $output_level
     }
@@ -126,6 +128,8 @@ else {
         $pesterConfig.CodeCoverage.Path = $coverageFiles
         $coverage_results_path = Join-Path $test_results_dir coverage.xml
         $pesterConfig.CodeCoverage.OutputPath = $coverage_results_path
+    if ($inputs.tests_fail_step) {
+        Write-ActionInfo "  * tests_fail_step: true"
     }
 
     $test_results_path = Join-Path $test_results_dir test-results.nunit.xml
@@ -156,6 +160,9 @@ else {
     }
     if ($error_clixml_path) {
         Set-ActionOutput -Name error_clixml_path -Value $error_clixml_path
+    }
+    if ($inputs.tests_fail_step -and ($pesterResult.FailedCount -gt 0)) {
+        $script:stepShouldFail = $true
     }
 
     Set-ActionOutput -Name result_clixml_path -Value $result_clixml_path
@@ -429,4 +436,9 @@ if ($test_results_path) {
             Publish-ToGist -ReportData $reportData
         }
     }
+}
+
+if ($stepShouldFail) {
+    Write-ActionInfo "Thowing error as ne or more tests failed and 'tests_fail_step' was true."
+    throw "One or more tests failed."
 }
