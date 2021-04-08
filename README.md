@@ -105,6 +105,7 @@ This Action defines the following formal inputs.
 | **`coverage_gist`**      | false | If true, will attach the coverage results to the gist specified in `gist_name`.
 | **`coverage_gist_badge`** | false | If true, render a coverage badge and add it to the gist specified in `gist_name`.
 
+| **`tests_fail_step`**    | false | If true, will cause the step to fail if one or more tests fails.
 
 
 ### Outputs
