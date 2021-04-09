@@ -382,7 +382,7 @@ function Publish-ToGist {
         }
     }
     if ($coverageData) {
-        $gistFiles."$([io.path]::GetFileNameWithoutExtension($reportGistName))_Coverage.html" = @{ content = $coverageData }
+        $gistFiles."$([io.path]::GetFileNameWithoutExtension($reportGistName))_Coverage.txt" = @{ content = $coverageData }
     }
     if ($inputs.coverage_gist_badge) {
         $coverageBadgeData = [System.IO.File]::ReadAllText($coverage_badge_path)
