@@ -160,11 +160,13 @@ inputs:
       `gist_name`.
     required: false
 
-  coverage_gist_badge:
+  coverage_gist_badge_label:
     description: |
-      If true, render a coverage badge and add it to the gist specified in
-      `gist_name`.
+      If specified, the Test Report Gist will also include an adjacent
+      badge rendered with the percentage of the associated Coverage Report 
+      and label content of this input.
     required: false
+
   tests_fail_step:
     description: |
       If true, will cause the step to fail if one or more tests fails.

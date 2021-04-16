@@ -44,7 +44,7 @@ $inputs = @{
     coverage_report_name = Get-ActionInput coverage_report_name
     coverage_report_title = Get-ActionInput coverage_report_title
     coverage_gist      = Get-ActionInput coverage_gist
-    coverage_gist_badge = Get-ActionInput coverage_gist_badge
+    coverage_gist_badge_label = Get-ActionInput coverage_gist_badge_label
     tests_fail_step    = Get-ActionInput tests_fail_step
 }
 
@@ -242,17 +242,14 @@ function Build-CoverageReport {
         $script:coverage_report_title = $report_name
     }
 
-    $script:coverage_summary_path = Join-Path $test_results_dir Summary.txt
-    $script:coverage_badge_path = Join-Path $test_results_dir badge_shieldsio_linecoverage_lightgrey.svg
-    dotnet tool install -g dotnet-reportgenerator-globaltool
-    $sourceDirs = ""
-    foreach ($path in $coverage_paths) {
-        if ($sourceDirs) {
-            $sourceDirs += ";"
+    $script:coverage_report_path = Join-Path $test_results_dir coverage-results.md
+    & "$PSScriptRoot/jacoco-report/jacocoxml2md.ps1" -Verbose `
+        -xmlFile $script:coverage_results_path `
+        -mdFile $script:coverage_report_path -xslParams @{
+            reportTitle = $script:coverage_report_title
         }
-        $sourceDirs += Split-Path $path
-    }
-    reportgenerator -reports:"$script:coverage_results_path" -targetdir:"$test_results_dir" -reporttypes:"Badges;TextSummary" -title:"$coverage_report_title" -sourcedirs:"$SourceDirs"
+
+    & "$PSScriptRoot/jacoco-report/embedmissedlines.ps1" -mdFile $script:coverage_report_path
 }
 
 function Publish-ToCheckRun {
@@ -382,11 +379,47 @@ function Publish-ToGist {
         }
     }
     if ($coverageData) {
-        $gistFiles."$([io.path]::GetFileNameWithoutExtension($reportGistName))_Coverage.txt" = @{ content = $coverageData }
+        $gistFiles."$([io.path]::GetFileNameWithoutExtension($reportGistName))_Coverage.md" = @{ content = $coverageData }
     }
-    if ($inputs.coverage_gist_badge) {
-        $coverageBadgeData = [System.IO.File]::ReadAllText($coverage_badge_path)
-        $gistFiles."$([io.path]::GetFileNameWithoutExtension($reportGistName))_Coverage_badge.svg" = @{ content = $coverageBadgeData }
+    if ($inputs.coverage_gist_badge_label) {
+        $coverage_gist_badge_label = $inputs.coverage_gist_badge_label
+        $coverage_gist_badge_label = Resolve-EscapeTokens $coverage_gist_badge_label $pesterResult -UrlEncode
+
+        $coverageXmlData = Select-Xml -Path $coverage_results_path -XPath "/report/counter[@type='LINE']"
+        $coveredLines = $coverageXmlData.Node.covered
+        Write-Host "Covered Lines: $coveredLines"
+        $missedLines = $coverageXmlData.Node.missed
+        Write-Host "Missed Lines: $missedLines"
+        if ($missedLines -eq 0) {
+            $coveragePercentage = 100
+        } else {
+            $coveragePercentage = [math]::Round(100 - (($missedLines / $coveredLines) * 100))
+        }
+        $coveragePercentageString = "$coveragePercentage%"
+
+        if ($coveragePercentage -eq 100) {
+            $coverage_gist_badge_color = 'brightgreen'
+        } elseif ($coveragePercentage -ge 80) {
+            $coverage_gist_badge_color = 'green'
+        } elseif ($coveragePercentage -ge 60) {
+            $coverage_gist_badge_color = 'yellowgreen'
+        } elseif ($coveragePercentage -ge 40) {
+            $coverage_gist_badge_color = 'yellow'
+        } elseif ($coveragePercentage -ge 20) {
+            $coverage_gist_badge_color = 'orange'
+        } else {
+            $coverage_gist_badge_color = 'red'
+        }
+
+        $coverage_gist_badge_url = "https://img.shields.io/badge/$coverage_gist_badge_label-$coveragePercentageString-$coverage_gist_badge_color"
+        Write-ActionInfo "Computed Coverage Badge URL: $coverage_gist_badge_url"
+        $coverageGistBadgeResult = Invoke-WebRequest $coverage_gist_badge_url -ErrorVariable $coverageGistBadgeError
+        if ($coverageGistBadgeError) {
+            $gistFiles."$($reportGistName)_coverage_badge.txt" = @{ content = $coverageGistBadgeError.Message }
+        }
+        else {
+            $gistFiles."$($reportGistName)_coverage_badge.svg" = @{ content = $coverageGistBadgeResult.Content }
+        }
     }
 
     if (-not $reportGist) {
@@ -422,7 +455,7 @@ if ($test_results_path) {
 
         Build-CoverageReport
 
-        $coverageSummaryData = [System.IO.File]::ReadAllText($coverage_summary_path)
+        $coverageSummaryData = [System.IO.File]::ReadAllText($coverage_report_path)
     }
 
     if ($inputs.skip_check_run -ne $true) {
