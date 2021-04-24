@@ -132,6 +132,41 @@ inputs:
       You can control which account is used to actually store the state by
       generating a token associated with the target account.
 
+  coverage_paths:
+    description: |
+      Comma-separated list of one or more directories to scan for code 
+      coverage, relative to the root of the project. Will include all .ps1
+      and .psm1 files under these directories recursively.
+    required: false
+
+  coverage_report_name:
+    description: |
+      The name of the code coverage report object that will be attached 
+      to the Workflow Run.  Defaults to the name 
+      `COVERAGE_RESULTS_<datetime>` where `<datetime>` is in the form 
+      `yyyyMMdd_hhmmss`.
+    required: false
+
+  coverage_report_title:
+    description: |
+      The title of the code coverage report that will be embedded in the 
+      report itself, which defaults to the same as the 
+      `code_coverage_report_name` input.
+    required: false
+
+  coverage_gist:
+    description: |
+      If true, will attach the coverage results to the gist specified in 
+      `gist_name`.
+    required: false
+
+  coverage_gist_badge_label:
+    description: |
+      If specified, the Test Report Gist will also include an adjacent
+      badge rendered with the percentage of the associated Coverage Report 
+      and label content of this input.
+    required: false
+
   tests_fail_step:
     description: |
       If true, will cause the step to fail if one or more tests fails.
@@ -180,6 +215,10 @@ outputs:
 
   failed_count:
     description: Total number of tests failed.
+
+  coverage_results_path:
+    description: |
+      Path to the code coverage results file in JaCoCo XML format.
 
 
 branding:

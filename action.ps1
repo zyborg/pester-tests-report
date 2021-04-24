@@ -40,6 +40,11 @@ $inputs = @{
     gist_token         = Get-ActionInput gist_token
     gist_badge_label   = Get-ActionInput gist_badge_label
     gist_badge_message = Get-ActionInput gist_badge_message
+    coverage_paths     = Get-ActionInput coverage_paths
+    coverage_report_name = Get-ActionInput coverage_report_name
+    coverage_report_title = Get-ActionInput coverage_report_title
+    coverage_gist      = Get-ActionInput coverage_gist
+    coverage_gist_badge_label = Get-ActionInput coverage_gist_badge_label
     tests_fail_step    = Get-ActionInput tests_fail_step
 }
 
@@ -65,6 +70,7 @@ else {
     $exclude_paths      = splitListInput $inputs.exclude_paths
     $include_tags       = splitListInput $inputs.include_tags
     $exclude_tags       = splitListInput $inputs.exclude_tags
+    $coverage_paths     = splitListInput $inputs.coverage_paths
     $output_level       = splitListInput $inputs.output_level
 
     Write-ActionInfo "Running Pester tests with following:"
@@ -109,6 +115,19 @@ else {
     if ($output_level) {
         Write-ActionInfo "  * output_level: $output_level"
         $pesterConfig.Output.Verbosity = $output_level
+    }
+
+    if ($coverage_paths) {
+        Write-ActionInfo "  * coverage_paths:"
+        writeListInput $coverage_paths
+        $coverageFiles = @()
+        foreach ($path in $coverage_paths) {
+            $coverageFiles +=  Get-ChildItem $Path -Recurse -Include @("*.ps1","*.psm1") -Exclude "*.Tests.ps1"
+        }
+        $pesterConfig.CodeCoverage.Enabled = $true
+        $pesterConfig.CodeCoverage.Path = $coverageFiles
+        $coverage_results_path = Join-Path $test_results_dir coverage.xml
+        $pesterConfig.CodeCoverage.OutputPath = $coverage_results_path
     }
 
     if ($inputs.tests_fail_step) {
@@ -211,9 +230,33 @@ function Build-MarkdownReport {
         }
 }
 
+function Build-CoverageReport {
+    Write-ActionInfo "Building human-readable code-coverage report"
+    $script:coverage_report_name = $inputs.coverage_report_name
+    $script:coverage_report_title = $inputs.coverage_report_title
+
+    if (-not $script:coverage_report_name) {
+        $script:coverage_report_name = "COVERAGE_RESULTS_$([datetime]::Now.ToString('yyyyMMdd_hhmmss'))"
+    }
+    if (-not $coverage_report_title) {
+        $script:coverage_report_title = $report_name
+    }
+
+    $script:coverage_report_path = Join-Path $test_results_dir coverage-results.md
+    & "$PSScriptRoot/jacoco-report/jacocoxml2md.ps1" -Verbose `
+        -xmlFile $script:coverage_results_path `
+        -mdFile $script:coverage_report_path -xslParams @{
+            reportTitle = $script:coverage_report_title
+        }
+
+    & "$PSScriptRoot/jacoco-report/embedmissedlines.ps1" -mdFile $script:coverage_report_path
+}
+
 function Publish-ToCheckRun {
     param(
-        [string]$reportData
+        [string]$reportData,
+        [string]$reportName,
+        [string]$reportTitle
     )
 
     Write-ActionInfo "Publishing Report to GH Workflow"
@@ -247,12 +290,12 @@ function Publish-ToCheckRun {
         Authorization = "token $ghToken"
     }
     $bdy = @{
-        name       = $report_name
+        name       = $reportName
         head_sha   = $ref
         status     = 'completed'
         conclusion = 'neutral'
         output     = @{
-            title   = $report_title
+            title   = $reportTitle
             summary = "This run completed at ``$([datetime]::Now)``"
             text    = $reportData
         }
@@ -262,7 +305,8 @@ function Publish-ToCheckRun {
 
 function Publish-ToGist {
     param(
-        [string]$reportData
+        [string]$reportData,
+        [string]$coverageData
     )
 
     Write-ActionInfo "Publishing Report to GH Workflow"
@@ -273,7 +317,7 @@ function Publish-ToGist {
 
     $gistsApiUrl = "https://api.github.com/gists"
     $apiHeaders = @{
-        Accept        = "application/vnd.github.v2+json"
+        Accept        = "application/vnd.github.v3+json"
         Authorization = "token $gist_token"
     }
 
@@ -334,6 +378,49 @@ function Publish-ToGist {
             $gistFiles."$($reportGistName)_badge.svg" = @{ content = $gistBadgeResult.Content }
         }
     }
+    if ($coverageData) {
+        $gistFiles."$([io.path]::GetFileNameWithoutExtension($reportGistName))_Coverage.md" = @{ content = $coverageData }
+    }
+    if ($inputs.coverage_gist_badge_label) {
+        $coverage_gist_badge_label = $inputs.coverage_gist_badge_label
+        $coverage_gist_badge_label = Resolve-EscapeTokens $coverage_gist_badge_label $pesterResult -UrlEncode
+
+        $coverageXmlData = Select-Xml -Path $coverage_results_path -XPath "/report/counter[@type='LINE']"
+        $coveredLines = $coverageXmlData.Node.covered
+        Write-Host "Covered Lines: $coveredLines"
+        $missedLines = $coverageXmlData.Node.missed
+        Write-Host "Missed Lines: $missedLines"
+        if ($missedLines -eq 0) {
+            $coveragePercentage = 100
+        } else {
+            $coveragePercentage = [math]::Round(100 - (($missedLines / $coveredLines) * 100))
+        }
+        $coveragePercentageString = "$coveragePercentage%"
+
+        if ($coveragePercentage -eq 100) {
+            $coverage_gist_badge_color = 'brightgreen'
+        } elseif ($coveragePercentage -ge 80) {
+            $coverage_gist_badge_color = 'green'
+        } elseif ($coveragePercentage -ge 60) {
+            $coverage_gist_badge_color = 'yellowgreen'
+        } elseif ($coveragePercentage -ge 40) {
+            $coverage_gist_badge_color = 'yellow'
+        } elseif ($coveragePercentage -ge 20) {
+            $coverage_gist_badge_color = 'orange'
+        } else {
+            $coverage_gist_badge_color = 'red'
+        }
+
+        $coverage_gist_badge_url = "https://img.shields.io/badge/$coverage_gist_badge_label-$coveragePercentageString-$coverage_gist_badge_color"
+        Write-ActionInfo "Computed Coverage Badge URL: $coverage_gist_badge_url"
+        $coverageGistBadgeResult = Invoke-WebRequest $coverage_gist_badge_url -ErrorVariable $coverageGistBadgeError
+        if ($coverageGistBadgeError) {
+            $gistFiles."$($reportGistName)_coverage_badge.txt" = @{ content = $coverageGistBadgeError.Message }
+        }
+        else {
+            $gistFiles."$($reportGistName)_coverage_badge.svg" = @{ content = $coverageGistBadgeResult.Content }
+        }
+    }
 
     if (-not $reportGist) {
         Write-ActionInfo "Creating initial Tests Report Gist"
@@ -363,11 +450,26 @@ if ($test_results_path) {
 
     $reportData = [System.IO.File]::ReadAllText($test_report_path)
 
+    if ($coverage_results_path) {
+        Set-ActionOutput -Name coverage_results_path -Value $coverage_results_path
+
+        Build-CoverageReport
+
+        $coverageSummaryData = [System.IO.File]::ReadAllText($coverage_report_path)
+    }
+
     if ($inputs.skip_check_run -ne $true) {
-        Publish-ToCheckRun -ReportData $reportData
+        Publish-ToCheckRun -ReportData $reportData -ReportName $report_name -ReportTitle $report_title
+        if ($coverage_results_path) {
+            Publish-ToCheckRun -ReportData $coverageSummaryData -ReportName $coverage_report_name -ReportTitle $coverage_report_title
+        }
     }
     if ($inputs.gist_name -and $inputs.gist_token) {
-        Publish-ToGist -ReportData $reportData
+        if ($inputs.coverage_gist) {
+            Publish-ToGist -ReportData $reportData -CoverageData $coverageSummaryData
+        } else {
+            Publish-ToGist -ReportData $reportData
+        }
     }
 }
 
