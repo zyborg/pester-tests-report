@@ -2,6 +2,8 @@
 
 GitHub Action to run Pester tests and generate report attached to Workflow Run
 
+:star: I appreciate your star, it helps me decide to which OSS projects I should allocate my spare time.
+
 ---
 
 [![GitHub Workflow - CI](https://github.com/zyborg/pester-tests-report/workflows/test-action/badge.svg)](https://github.com/zyborg/pester-tests-report/actions?workflow=test-action)
