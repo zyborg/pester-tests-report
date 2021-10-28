@@ -65,7 +65,7 @@ jobs:
         uses: ./
         with:
           include_paths: tests/GitHubActions_subset.ps1
-          report_name: SmallTest
+          report_name: SmallTest, Результаты тестирования
           report_title: Tests, But Smaller
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
