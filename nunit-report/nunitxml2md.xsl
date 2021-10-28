@@ -9,7 +9,7 @@
                 xmlns:trx="http://microsoft.com/schemas/VisualStudio/TeamTest/2010"
                 >
 
-    <xsl:output method="text" encoding="UTF-16"/>
+    <xsl:output method="text" encoding="UTF-8"/>
     <xsl:strip-space elements="*"/>
 
     <xsl:param name="reportTitle">
