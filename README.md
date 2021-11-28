@@ -2,10 +2,6 @@
 
 GitHub Action to run Pester tests and generate report attached to Workflow Run
 
-:star: I appreciate your star, it helps me decide to which OSS projects I should allocate my spare time.
-
-
-
 This Action can be used to execute PowerShell Pester tests within a GitHub
 Workflow, as well as generate a Report from the test results and attach it
 to the Workflow Run as a Check Run.
