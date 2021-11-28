@@ -32,7 +32,7 @@ jobs:
         id: testAction3
         uses: ./
         with:
-          test_results_path: my_own_test_results/pester-test-results.nunit.xml
+          test_results_path: nunit-report/example1.nunit.xml
           report_name: MyOwnTestResults
           report_title: My Own Test Results
           github_token: ${{ secrets.GITHUB_TOKEN }}
