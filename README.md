@@ -1,15 +1,10 @@
-# pester-tests-report
+# coverage-report
 
 GitHub Action to run Pester tests and generate report attached to Workflow Run
 
 :star: I appreciate your star, it helps me decide to which OSS projects I should allocate my spare time.
 
----
 
-[![GitHub Workflow - CI](https://github.com/zyborg/pester-tests-report/workflows/test-action/badge.svg)](https://github.com/zyborg/pester-tests-report/actions?workflow=test-action)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/zyborg/pester-tests-report)](https://github.com/zyborg/pester-tests-report/releases/latest)
-
----
 
 This Action can be used to execute PowerShell Pester tests within a GitHub
 Workflow, as well as generate a Report from the test results and attach it
@@ -24,9 +19,6 @@ Tests Report as part of a GitHub Workflow
 [associated](https://github.com/zyborg/pester-tests-report/actions/runs/298169540/workflow#L138)
 with this project.
 
-* [![Example Pester Tests Badge](https://gist.github.com/ebekker/9158b8c9a9999270ef482faae6f4a742/raw/pester-tests-report_Marketplace_GHAction_test1.md_badge.svg)](https://gist.github.com/ebekker/9158b8c9a9999270ef482faae6f4a742#pester-tests-report_Marketplace_GHAction_test1.md)
-* [![Example Pester Tests Badge](https://gist.github.com/ebekker/5e97f7385f1c7812118d39306b938cd0/raw/pester-tests-report_Marketplace_GHAction_test2.md_badge.svg)](https://gist.github.com/ebekker/5e97f7385f1c7812118d39306b938cd0#pester-tests-report_Marketplace_GHAction_test2.md)
-* [![Example Pester Tests Badge](https://gist.github.com/ebekker/dff5ae43943226d800cd1ee891dc889b/raw/pester-tests-report_GHAction_test1.md_badge.svg)](https://gist.github.com/ebekker/dff5ae43943226d800cd1ee891dc889b)
 
 And here are some samples of the actual generated reports:
 
