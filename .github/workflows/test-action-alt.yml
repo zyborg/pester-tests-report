@@ -1,5 +1,5 @@
 
-name: test-action-alt
+name: test-action-alt-1
 
 on:
   push:
