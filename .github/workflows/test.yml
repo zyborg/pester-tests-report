@@ -24,4 +24,12 @@ jobs:
         with:
           path: nunit-cobetura/coverage.xml
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          minimum_coverage: 10
+          minimum_coverage: 10    
+          skip_covered: true
+          fail_below_threshold: true
+          show_line: false
+          show_branch: false
+          show_class_names: false
+          show_missing: false
+          link_missing_lines: false
+          only_changed_files: false
