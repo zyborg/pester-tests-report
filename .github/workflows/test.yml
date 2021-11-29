@@ -20,6 +20,6 @@ jobs:
     steps:
       - uses: 5monkeys/cobertura-action@master
         with:
-          path: ./pytest-cov-report/coverage.xml
+          path: pytest-cov-report/coverage.xml
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           minimum_coverage: 75
