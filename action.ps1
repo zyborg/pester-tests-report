@@ -101,14 +101,14 @@ else {
     if ($include_tags) {
         Write-ActionInfo "  * include_tags:"
         writeListInput $include_tags
-        $pesterConfig.Filter.Tag = $include_tags    
+        $pesterConfig.Filter.Tag = $include_tags
     }
     else { Write-ActionInfo "  * Default include_tags"}
-    
+
     if ($exclude_tags) {
         Write-ActionInfo "  * exclude_tags:"
         writeListInput $exclude_tags
-        $pesterConfig.Filter.ExcludeTag = $exclude_tags    
+        $pesterConfig.Filter.ExcludeTag = $exclude_tags
     }
     else { Write-ActionInfo "  * Default exclude_tags"}
 
@@ -284,7 +284,7 @@ function Publish-ToCheckRun {
     Write-ActionInfo "Resolve Repo Full Name as $repoFullName"
 
     Write-ActionInfo "Adding Check Run"
-    $url = "https://api.github.com/repos/$repoFullName/check-runs"
+    $url = "${Env:GITHUB_API_URL}/repos/$repoFullName/check-runs"
     $hdr = @{
         Accept = 'application/vnd.github.antiope-preview+json'
         Authorization = "token $ghToken"
@@ -315,7 +315,7 @@ function Publish-ToGist {
     $gist_token = $inputs.gist_token
     Write-ActionInfo "Resolved Report Gist Name.....: [$reportGistName]"
 
-    $gistsApiUrl = "https://api.github.com/gists"
+    $gistsApiUrl = "${Env:GITHUB_API_URL}/gists"
     $apiHeaders = @{
         Accept        = "application/vnd.github.v3+json"
         Authorization = "token $gist_token"
