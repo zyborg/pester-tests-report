@@ -14,7 +14,6 @@ $modulesToInstall | ForEach-Object {
 }
 
 ## Import dependencies
-Import-Module GitHubActions -Force
 Import-Module Pester -Force
 
 Write-Host "Running from [$($PSScriptRoot)]"
