@@ -13,6 +13,15 @@ description: |
 ## You also use these to identify the *required* inputs.
 inputs:
 
+  shell:
+    description: |
+      Specifies whether pester should run in Powershell or Windows 
+      PowerShell 5.1. Valid values are 'pwsh' and 'powershell', and 
+      defaults to 'pwsh'. 'powershell' option is only valid when run 
+      on Windows.
+    required: false
+    default: pwsh
+
   test_results_path:
     description: |
       Path to the test results file which will be used to generate
@@ -225,8 +234,33 @@ branding:
   color: purple
   icon: check-circle
 
-## Even though the Action logic may be implemented
-## in PWSH, we still need a NodeJS entry point
 runs:
-  using: node12
-  main: _init/index.js
+  using: composite
+  steps:
+    - name: Run Action
+      id: runaction
+      run: . "$env:GITHUB_ACTION_PATH\action.ps1"
+      shell: ${{ inputs.shell }}
+      env:
+        INPUT_TEST_RESULTS_PATH: ${{ inputs.test_results_path }}
+        INPUT_FULL_NAMES_FILTERS: ${{ inputs.full_names_filters }}
+        INPUT_INCLUDE_PATHS: ${{ inputs.include_paths }}
+        INPUT_EXCLUDE_PATHS: ${{ inputs.exclude_paths }}
+        INPUT_INCLUDE_TAGS: ${{ inputs.include_tags }}
+        INPUT_EXCLUDE_TAGS: ${{ inputs.exclude_tags }}
+        INPUT_OUTPUT_LEVEL: ${{ inputs.output_level }}
+        INPUT_REPORT_NAME: ${{ inputs.report_name }}
+        INPUT_REPORT_TITLE: ${{ inputs.report_title }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github_token }}
+        INPUT_SKIP_CHECK_RUN: ${{ inputs.skip_check_run }}
+        INPUT_GIST_NAME: ${{ inputs.gist_name }}
+        INPUT_GIST_BADGE_LABEL: ${{ inputs.gist_badge_label }}
+        INPUT_GIST_BADGE_MESSAGE: ${{ inputs.gist_badge_message }}
+        INPUT_GIST_TOKEN: ${{ inputs.gist_token }}
+        INPUT_COVERAGE_PATHS: ${{ inputs.coverage_paths }}
+        INPUT_COVERAGE_REPORT_NAME: ${{ inputs.coverage_report_name }}
+        INPUT_COVERAGE_REPORT_TITLE: ${{ inputs.coverage_report_title }}
+        INPUT_COVERAGE_GIST: ${{ inputs.coverage_gist }}
+        INPUT_COVERAGE_GIST_BADGE_LABEL: ${{ inputs.coverage_gist_badge_label }}
+        INPUT_TESTS_FAIL_STEP: ${{ inputs.tests_fail_step }}
+
