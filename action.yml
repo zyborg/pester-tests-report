@@ -191,11 +191,13 @@ outputs:
       was provided to this action, this value will be the same.
       Otherwise, this will be the path to where the test results
       file was generated from running the resolved Pester tests.
+    value: ${{ steps.runaction.outputs.test_results_path }}
   
   error_message:
     description: |
       The summary message of the error returned by Pester, or
       empty if no error was produced.
+    value: ${{ steps.runaction.outputs.error_message }}
   
   error_clixml_path:
     description:
@@ -203,6 +205,7 @@ outputs:
       be the path to an export of the full error record in the
       CLIXML form.  A subsequent PowerShell step can recover
       this object using the `Import-Clixml` cmdlet.
+    value: ${{ steps.runaction.outputs.error_clixml_path }}
   
   result_clixml_path:
     description:
@@ -210,24 +213,30 @@ outputs:
       be the path to an export of the full result record in the
       CLIXML form.  A subsequent PowerShell step can recover
       this object using the `Import-Clixml` cmdlet.
+    value: ${{ steps.runaction.outputs.result_clixml_path }}
 
   result_value:
     description: |
       A single string indicating the final result such as
       `Failed` or `Passed`.
+    value: ${{ steps.runaction.outputs.result_value }}
   
   total_count:
     description: Total number of tests discovered.
+    value: ${{ steps.runaction.outputs.total_count }}
 
   passed_count:
     description: Total number of tests passed.
+    value: ${{ steps.runaction.outputs.passed_count }}
 
   failed_count:
     description: Total number of tests failed.
+    value: ${{ steps.runaction.outputs.failed_count }}
 
   coverage_results_path:
     description: |
       Path to the code coverage results file in JaCoCo XML format.
+    value: ${{ steps.runaction.outputs.coverage_results_path }}
 
 
 branding:
