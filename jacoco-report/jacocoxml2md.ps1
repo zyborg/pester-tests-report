@@ -69,8 +69,12 @@ if ($xslParams) {
 $script:wrtr = [System.IO.StreamWriter]::new($mdFile)
 try {
     Write-Verbose "Transforming XML to MD"
+    $script:readerSettings = [System.Xml.XmlReaderSettings]::new()
+    $script:readerSettings.DtdProcessing = "Ignore"
+    $script:reader = [System.Xml.XmlReader]::Create($xmlFile, $script:readerSettings)
+
     $script:xslt.Transform(
-        [string]$xmlFile,
+        [System.Xml.XmlReader]$script:reader,
         [System.Xml.Xsl.XsltArgumentList]$script:list,
         [System.IO.TextWriter]$script:wrtr)
 }
