@@ -73,7 +73,7 @@ else {
 
     Write-Host "Running Pester tests with following:"
     Write-Host "  * relative to PWD: $PWD"
-    Write-Host "  * PowerShell version $($PSVersionTable.PSVersion) $($PSVersionTable.PSEdition)"
+    Write-Host "  * PowerShell version: $($PSVersionTable.PSVersion) $($PSVersionTable.PSEdition)"
     $pesterConfig = [PesterConfiguration]::new()
 
     if ($full_names_filters) {
