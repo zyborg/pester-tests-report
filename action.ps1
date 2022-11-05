@@ -156,20 +156,20 @@ else {
     Export-Clixml -InputObject $pesterResult -Path $result_clixml_path
 
     if ($error_message) {
-        Write-Host "::set-output name=error_message::$error_message"
+        "error_message=$error_message" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf-8 -Append
     }
     if ($error_clixml_path) {
-        Write-Host "::set-output name=error_clixml_path::$error_clixml_path"
+        "error_clixml_path=$error_clixml_path" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf-8 -Append
     }
     if ($inputs.tests_fail_step -and ($pesterResult.FailedCount -gt 0)) {
         $script:stepShouldFail = $true
     }
 
-    Write-Host "::set-output name=result_clixml_path::$result_clixml_path"
-    Write-Host "::set-output name=result_value::$($pesterResult.Result)"
-    Write-Host "::set-output name=total_count::$($pesterResult.TotalCount)"
-    Write-Host "::set-output name=passed_count::$($pesterResult.PassedCount)"
-    Write-Host "::set-output name=failed_count::$($pesterResult.FailedCount)"
+    "result_clixml_path=$result_clixml_path" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf-8 -Append
+    "result_value=$($pesterResult.Result)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf-8 -Append
+    "total_count=$($pesterResult.TotalCount)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf-8 -Append
+    "passed_count=$($pesterResult.PassedCount)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf-8 -Append
+    "failed_count=$($pesterResult.FailedCount)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf-8 -Append
 }
 
 function Resolve-EscapeTokens {
@@ -441,14 +441,14 @@ function Publish-ToGist {
 }
 
 if ($test_results_path) {
-    Write-Host "::set-output name=test_results_path::$test_results_path"
+    "test_results_path=$test_results_path" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf-8 -Append
 
     Build-MarkdownReport
 
     $reportData = [System.IO.File]::ReadAllText($test_report_path)
 
     if ($coverage_results_path) {
-        Write-Host "::set-output name=coverage_results_path::$coverage_results_path"
+        "coverage_results_path=$coverage_results_path" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf-8 -Append
 
         Build-CoverageReport
 
