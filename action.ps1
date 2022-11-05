@@ -72,7 +72,8 @@ else {
     $output_level       = splitListInput $inputs.output_level
 
     Write-Host "Running Pester tests with following:"
-    Write-Host "  * realtive to PWD: $PWD"
+    Write-Host "  * relative to PWD: $PWD"
+    Write-Host "  * PowerShell version $($PSVersionTable.PSVersion) $($PSVersionTable.PSEdition)"
     $pesterConfig = [PesterConfiguration]::new()
 
     if ($full_names_filters) {
