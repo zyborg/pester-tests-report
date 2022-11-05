@@ -16,9 +16,9 @@ inputs:
   shell:
     description: |
       Specifies whether pester should run in Powershell or Windows 
-      PowerShell 5.1. Valid values are 'pwsh' and 'powershell', and 
-      defaults to 'pwsh'. 'powershell' option is only valid when run 
-      on Windows.
+      PowerShell. Valid values are 'pwsh' (PowerShell) and 'powershell' 
+      (Windows Powershell). Defaults to 'pwsh'. Note that the 'powershell' 
+      option is only valid when run on Windows.
     required: false
     default: pwsh
 
