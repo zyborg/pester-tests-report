@@ -258,47 +258,51 @@ function Publish-ToCheckRun {
         [string]$reportTitle
     )
 
-    Write-Host "Publishing Report to GH Workflow"
+    if ($env:GITHUB_EVENT_NAME -eq "workflow_dispatch") {
+        Write-Host "::notice title=Check Run Publishing Skipped::Check run publishing has been skipped as it is not possible to attach check runs to workflows triggered with 'workflow_dispatch'."
+    } else {
+        Write-Host "Publishing Report to GH Workflow"
 
-    $ghToken = $inputs.github_token
-    $repoFullName = $env:GITHUB_REPOSITORY
+        $ghToken = $inputs.github_token
+        $repoFullName = $env:GITHUB_REPOSITORY
 
-    Write-Host "Resolving REF"
-    $ref = $env:GITHUB_SHA
-    if ($env:GITHUB_EVENT_NAME -eq 'pull_request') {
-        Write-Host "Resolving PR REF"
-        $payload = Get-Content -Raw $env:GITHUB_EVENT_PATH -Encoding utf8 | ConvertFrom-Json
-        $ref = $payload.pull_request.head.sha
+        Write-Host "Resolving REF"
+        $ref = $env:GITHUB_SHA
+        if ($env:GITHUB_EVENT_NAME -eq 'pull_request') {
+            Write-Host "Resolving PR REF"
+            $payload = Get-Content -Raw $env:GITHUB_EVENT_PATH -Encoding utf8 | ConvertFrom-Json
+            $ref = $payload.pull_request.head.sha
+            if (-not $ref) {
+                Write-Host "Resolving PR REF as AFTER"
+                $ref = $payload.after
+            }
+        }
         if (-not $ref) {
-            Write-Host "Resolving PR REF as AFTER"
-            $ref = $payload.after
+            Write-ActionError "Failed to resolve REF"
+            exit 1
         }
-    }
-    if (-not $ref) {
-        Write-ActionError "Failed to resolve REF"
-        exit 1
-    }
-    Write-Host "Resolved REF as $ref"
-    Write-Host "Resolve Repo Full Name as $repoFullName"
+        Write-Host "Resolved REF as $ref"
+        Write-Host "Resolve Repo Full Name as $repoFullName"
 
-    Write-Host "Adding Check Run"
-    $url = "https://api.github.com/repos/$repoFullName/check-runs"
-    $hdr = @{
-        Accept = 'application/vnd.github.antiope-preview+json'
-        Authorization = "token $ghToken"
-    }
-    $bdy = @{
-        name       = $reportName
-        head_sha   = $ref
-        status     = 'completed'
-        conclusion = 'neutral'
-        output     = @{
-            title   = $reportTitle
-            summary = "This run completed at ``$([datetime]::Now)``"
-            text    = $reportData
+        Write-Host "Adding Check Run"
+        $url = "https://api.github.com/repos/$repoFullName/check-runs"
+        $hdr = @{
+            Accept = 'application/vnd.github.antiope-preview+json'
+            Authorization = "token $ghToken"
         }
+        $bdy = @{
+            name       = $reportName
+            head_sha   = $ref
+            status     = 'completed'
+            conclusion = 'neutral'
+            output     = @{
+                title   = $reportTitle
+                summary = "This run completed at ``$([datetime]::Now)``"
+                text    = $reportData
+            }
+        }
+        Invoke-WebRequest -Headers $hdr $url -Method Post -Body ($bdy | ConvertTo-Json)
     }
-    Invoke-WebRequest -Headers $hdr $url -Method Post -Body ($bdy | ConvertTo-Json)
 }
 
 function Publish-ToGist {
