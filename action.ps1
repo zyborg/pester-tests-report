@@ -4,62 +4,64 @@ $ErrorActionPreference = 'Stop'
 
 ## Make sure any modules we depend on are installed
 $modulesToInstall = @(
+    'GitHubActions'
     'Pester'
 )
 $modulesToInstall | ForEach-Object {
     if (-not (Get-Module -ListAvailable -All $_)) {
-        Write-Host "Module [$_] not found, INSTALLING..."
+        Write-Output "Module [$_] not found, INSTALLING..."
         Install-Module $_ -Force
     }
 }
 
 ## Import dependencies
+Import-Module GitHubActions -Force
 Import-Module Pester -Force
 
 Write-Host "Running from [$($PSScriptRoot)]"
 
 function splitListInput { $args[0] -split ',' | % { $_.Trim() } }
-function writeListInput { $args[0] | % { Write-Host "    - $_" } }
+function writeListInput { $args[0] | % { Write-ActionInfo "    - $_" } }
 
 
 $inputs = @{
-    test_results_path  = $env:INPUT_TEST_RESULTS_PATH
-    full_names_filters = $env:INPUT_FULL_NAMES_FILTERS
-    include_paths      = $env:INPUT_INCLUDE_PATHS
-    exclude_paths      = $env:INPUT_EXCLUDE_PATHS
-    include_tags       = $env:INPUT_INCLUDE_TAGS
-    exclude_tags       = $env:INPUT_EXCLUDE_TAGS
-    output_level       = $env:INPUT_OUTPUT_LEVEL
-    report_name        = $env:INPUT_REPORT_NAME
-    report_title       = $env:INPUT_REPORT_TITLE
-    github_token       = $env:INPUT_GITHUB_TOKEN
-    skip_check_run     = $env:INPUT_SKIP_CHECK_RUN
-    gist_name          = $env:INPUT_GIST_NAME
-    gist_token         = $env:INPUT_GIST_TOKEN
-    gist_badge_label   = $env:INPUT_GIST_BADGE_LABEL
-    gist_badge_message = $env:INPUT_GIST_BADGE_MESSAGE
-    coverage_paths     = $env:INPUT_COVERAGE_PATHS
-    coverage_report_name = $env:INPUT_COVERAGE_REPORT_NAME
-    coverage_report_title = $env:INPUT_COVERAGE_REPORT_TITLE
-    coverage_gist      = $env:INPUT_COVERAGE_GIST
-    coverage_gist_badge_label = $env:INPUT_COVERAGE_GIST_BADGE_LABEL
-    tests_fail_step    = $env:INPUT_TESTS_FAIL_STEP
+    test_results_path  = Get-ActionInput test_results_path
+    full_names_filters = Get-ActionInput full_names_filters
+    include_paths      = Get-ActionInput include_paths
+    exclude_paths      = Get-ActionInput exclude_paths
+    include_tags       = Get-ActionInput include_tags
+    exclude_tags       = Get-ActionInput exclude_tags
+    output_level       = Get-ActionInput output_level
+    report_name        = Get-ActionInput report_name
+    report_title       = Get-ActionInput report_title
+    github_token       = Get-ActionInput github_token -Required
+    skip_check_run     = Get-ActionInput skip_check_run
+    gist_name          = Get-ActionInput gist_name
+    gist_token         = Get-ActionInput gist_token
+    gist_badge_label   = Get-ActionInput gist_badge_label
+    gist_badge_message = Get-ActionInput gist_badge_message
+    coverage_paths     = Get-ActionInput coverage_paths
+    coverage_report_name = Get-ActionInput coverage_report_name
+    coverage_report_title = Get-ActionInput coverage_report_title
+    coverage_gist      = Get-ActionInput coverage_gist
+    coverage_gist_badge_label = Get-ActionInput coverage_gist_badge_label
+    tests_fail_step    = Get-ActionInput tests_fail_step
 }
 
 $test_results_dir = Join-Path $PWD _TMP
-Write-Host "Creating test results space"
+Write-ActionInfo "Creating test results space"
 if (-not (Test-Path -Path $test_results_dir -PathType Container)) {
     mkdir $test_results_dir
 }
 
 $test_results_path = $inputs.test_results_path
 if ($test_results_path) {
-    Write-Host "Test Results Path provided as input; skipping Pester tests"
+    Write-ActionInfo "Test Results Path provided as input; skipping Pester tests"
 
-    $result_clixml_path = $env:INPUT_RESULT_CLIXML_PATH
+    $result_clixml_path = Get-ActionInput result_clixml_path
     if ($result_clixml_path) {
         $script:pesterResult = Import-Clixml $result_clixml_path
-        Write-Host "Pester Result CLIXML provided as input; loaded"
+        Write-ActionInfo "Pester Result CLIXML provided as input; loaded"
     }
 }
 else {
@@ -71,53 +73,53 @@ else {
     $coverage_paths     = splitListInput $inputs.coverage_paths
     $output_level       = splitListInput $inputs.output_level
 
-    Write-Host "Running Pester tests with following:"
-    Write-Host "  * relative to PWD: $PWD"
-    Write-Host "  * PowerShell version: $($PSVersionTable.PSVersion) $($PSVersionTable.PSEdition)"
+    Write-ActionInfo "Running Pester tests with following:"
+    Write-ActionInfo "  * relative to PWD: $PWD"
+    Write-ActionInfo "  * PowerShell version: $($PSVersionTable.PSVersion.ToString()) $($PSVersionTable.PSEdition)"
     $pesterConfig = [PesterConfiguration]::new()
 
     if ($full_names_filters) {
-        Write-Host "  * full_names_filters:"
+        Write-ActionInfo "  * full_names_filters:"
         writeListInput $full_names_filters
         $pesterConfig.Filter.FullName = $full_names_filters
     }
-    else { Write-Host "  * Default full_names_filters"}
+    else { Write-ActionInfo "  * Default full_names_filters"}
 
     if ($include_paths) {
-        Write-Host "  * include_paths:"
+        Write-ActionInfo "  * include_paths:"
         writeListInput $include_paths
         $pesterConfig.Run.Path = $include_paths
     }
-    else { Write-Host "  * Default include_paths"}
+    else { Write-ActionInfo "  * Default include_paths"}
 
     if ($exclude_paths) {
-        Write-Host "  * exclude_paths:"
+        Write-ActionInfo "  * exclude_paths:"
         writeListInput $exclude_paths
         $pesterConfig.Run.ExcludePath = $exclude_paths
     }
-    else { Write-Host "  * Default exclude_paths"}
+    else { Write-ActionInfo "  * Default exclude_paths"}
 
     if ($include_tags) {
-        Write-Host "  * include_tags:"
+        Write-ActionInfo "  * include_tags:"
         writeListInput $include_tags
         $pesterConfig.Filter.Tag = $include_tags    
     }
-    else { Write-Host "  * Default include_tags"}
+    else { Write-ActionInfo "  * Default include_tags"}
     
     if ($exclude_tags) {
-        Write-Host "  * exclude_tags:"
+        Write-ActionInfo "  * exclude_tags:"
         writeListInput $exclude_tags
         $pesterConfig.Filter.ExcludeTag = $exclude_tags    
     }
-    else { Write-Host "  * Default exclude_tags"}
+    else { Write-ActionInfo "  * Default exclude_tags"}
 
     if ($output_level) {
-        Write-Host "  * output_level: $output_level"
+        Write-ActionInfo "  * output_level: $output_level"
         $pesterConfig.Output.Verbosity = $output_level
     }
 
     if ($coverage_paths) {
-        Write-Host "  * coverage_paths:"
+        Write-ActionInfo "  * coverage_paths:"
         writeListInput $coverage_paths
         $coverageFiles = @()
         foreach ($path in $coverage_paths) {
@@ -130,7 +132,7 @@ else {
     }
 
     if ($inputs.tests_fail_step) {
-        Write-Host "  * tests_fail_step: true"
+        Write-ActionInfo "  * tests_fail_step: true"
     }
 
     $test_results_path = Join-Path $test_results_dir test-results.nunit.xml
@@ -157,20 +159,20 @@ else {
     Export-Clixml -InputObject $pesterResult -Path $result_clixml_path
 
     if ($error_message) {
-        "error_message=$error_message" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        Set-ActionOutput -Name error_message -Value $error_message
     }
     if ($error_clixml_path) {
-        "error_clixml_path=$error_clixml_path" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        Set-ActionOutput -Name error_clixml_path -Value $error_clixml_path
     }
     if ($inputs.tests_fail_step -and ($pesterResult.FailedCount -gt 0)) {
         $script:stepShouldFail = $true
     }
 
-    "result_clixml_path=$result_clixml_path" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-    "result_value=$($pesterResult.Result)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-    "total_count=$($pesterResult.TotalCount)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-    "passed_count=$($pesterResult.PassedCount)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-    "failed_count=$($pesterResult.FailedCount)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+    Set-ActionOutput -Name result_clixml_path -Value $result_clixml_path
+    Set-ActionOutput -Name result_value -Value ($pesterResult.Result)
+    Set-ActionOutput -Name total_count -Value ($pesterResult.TotalCount)
+    Set-ActionOutput -Name passed_count -Value ($pesterResult.PassedCount)
+    Set-ActionOutput -Name failed_count -Value ($pesterResult.FailedCount)
 }
 
 function Resolve-EscapeTokens {
@@ -230,7 +232,7 @@ function Build-MarkdownReport {
 }
 
 function Build-CoverageReport {
-    Write-Host "Building human-readable code-coverage report"
+    Write-ActionInfo "Building human-readable code-coverage report"
     $script:coverage_report_name = $inputs.coverage_report_name
     $script:coverage_report_title = $inputs.coverage_report_title
 
@@ -261,30 +263,31 @@ function Publish-ToCheckRun {
     if ($env:GITHUB_EVENT_NAME -eq "workflow_dispatch") {
         Write-Host "::notice title=Check Run Publishing Skipped::Check run publishing has been skipped as it is not possible to attach check runs to workflows triggered with 'workflow_dispatch'."
     } else {
-        Write-Host "Publishing Report to GH Workflow"
+        Write-ActionInfo "Publishing Report to GH Workflow"
 
         $ghToken = $inputs.github_token
-        $repoFullName = $env:GITHUB_REPOSITORY
+        $ctx = Get-ActionContext
+        $repo = Get-ActionRepo
+        $repoFullName = "$($repo.Owner)/$($repo.Repo)"
 
-        Write-Host "Resolving REF"
-        $ref = $env:GITHUB_SHA
-        if ($env:GITHUB_EVENT_NAME -eq 'pull_request') {
-            Write-Host "Resolving PR REF"
-            $payload = Get-Content -Raw $env:GITHUB_EVENT_PATH -Encoding utf8 | ConvertFrom-Json
-            $ref = $payload.pull_request.head.sha
+        Write-ActionInfo "Resolving REF"
+        $ref = $ctx.Sha
+        if ($ctx.EventName -eq 'pull_request') {
+            Write-ActionInfo "Resolving PR REF"
+            $ref = $ctx.Payload.pull_request.head.sha
             if (-not $ref) {
-                Write-Host "Resolving PR REF as AFTER"
-                $ref = $payload.after
+                Write-ActionInfo "Resolving PR REF as AFTER"
+                $ref = $ctx.Payload.after
             }
         }
         if (-not $ref) {
             Write-ActionError "Failed to resolve REF"
             exit 1
         }
-        Write-Host "Resolved REF as $ref"
-        Write-Host "Resolve Repo Full Name as $repoFullName"
+        Write-ActionInfo "Resolved REF as $ref"
+        Write-ActionInfo "Resolve Repo Full Name as $repoFullName"
 
-        Write-Host "Adding Check Run"
+        Write-ActionInfo "Adding Check Run"
         $url = "https://api.github.com/repos/$repoFullName/check-runs"
         $hdr = @{
             Accept = 'application/vnd.github.antiope-preview+json'
@@ -311,11 +314,11 @@ function Publish-ToGist {
         [string]$coverageData
     )
 
-    Write-Host "Publishing Report to GH Workflow"
+    Write-ActionInfo "Publishing Report to GH Workflow"
 
     $reportGistName = $inputs.gist_name
     $gist_token = $inputs.gist_token
-    Write-Host "Resolved Report Gist Name.....: [$reportGistName]"
+    Write-ActionInfo "Resolved Report Gist Name.....: [$reportGistName]"
 
     $gistsApiUrl = "https://api.github.com/gists"
     $apiHeaders = @{
@@ -328,16 +331,16 @@ function Publish-ToGist {
 
     ## Parse response content as JSON
     $listGists = $listGistsResp.Content | ConvertFrom-Json
-    Write-Host "Got [$($listGists.Count)] Gists for current account"
+    Write-ActionInfo "Got [$($listGists.Count)] Gists for current account"
 
     ## Isolate the first Gist with a file matching the expected metadata name
     $reportGist = $listGists | Where-Object { $_.files.$reportGistName } | Select-Object -First 1
 
     if ($reportGist) {
-        Write-Host "Found the Tests Report Gist!"
+        Write-ActionInfo "Found the Tests Report Gist!"
         ## Debugging:
         #$reportDataRawUrl = $reportGist.files.$reportGistName.raw_url
-        #Write-Host "Fetching Tests Report content from Raw Url"
+        #Write-ActionInfo "Fetching Tests Report content from Raw Url"
         #$reportDataRawResp = Invoke-WebRequest -Headers $apiHeaders -Uri $reportDataRawUrl
         #$reportDataContent = $reportDataRawResp.Content
         #if (-not $reportData) {
@@ -371,7 +374,7 @@ function Publish-ToGist {
             default { 'yellow' }
         }
         $gist_badge_url = "https://img.shields.io/badge/$gist_badge_label-$gist_badge_message-$gist_badge_color"
-        Write-Host "Computed Badge URL: $gist_badge_url"
+        Write-ActionInfo "Computed Badge URL: $gist_badge_url"
         $gistBadgeResult = Invoke-WebRequest $gist_badge_url -ErrorVariable $gistBadgeError
         if ($gistBadgeError) {
             $gistFiles."$($reportGistName)_badge.txt" = @{ content = $gistBadgeError.Message }
@@ -414,7 +417,7 @@ function Publish-ToGist {
         }
 
         $coverage_gist_badge_url = "https://img.shields.io/badge/$coverage_gist_badge_label-$coveragePercentageString-$coverage_gist_badge_color"
-        Write-Host "Computed Coverage Badge URL: $coverage_gist_badge_url"
+        Write-ActionInfo "Computed Coverage Badge URL: $coverage_gist_badge_url"
         $coverageGistBadgeResult = Invoke-WebRequest $coverage_gist_badge_url -ErrorVariable $coverageGistBadgeError
         if ($coverageGistBadgeError) {
             $gistFiles."$($reportGistName)_coverage_badge.txt" = @{ content = $coverageGistBadgeError.Message }
@@ -425,35 +428,35 @@ function Publish-ToGist {
     }
 
     if (-not $reportGist) {
-        Write-Host "Creating initial Tests Report Gist"
+        Write-ActionInfo "Creating initial Tests Report Gist"
         $createGistResp = Invoke-WebRequest -Headers $apiHeaders -Uri $gistsApiUrl -Method Post -Body (@{
             public = $true ## Set thit to false to make it a Secret Gist
             files = $gistFiles
         } | ConvertTo-Json)
         $createGist = $createGistResp.Content | ConvertFrom-Json
         $reportGist = $createGist
-        Write-Host "Create Response: $createGistResp"
+        Write-ActionInfo "Create Response: $createGistResp"
     }
     else {
-        Write-Host "Updating Tests Report Gist"
+        Write-ActionInfo "Updating Tests Report Gist"
         $updateGistUrl = "$gistsApiUrl/$($reportGist.id)"
         $updateGistResp = Invoke-WebRequest -Headers $apiHeaders -Uri $updateGistUrl -Method Patch -Body (@{
             files = $gistFiles
         } | ConvertTo-Json)
 
-        Write-Host "Update Response: $updateGistResp"
+        Write-ActionInfo "Update Response: $updateGistResp"
     }
 }
 
 if ($test_results_path) {
-    "test_results_path=$test_results_path" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+    Set-ActionOutput -Name test_results_path -Value $test_results_path
 
     Build-MarkdownReport
 
     $reportData = [System.IO.File]::ReadAllText($test_report_path)
 
     if ($coverage_results_path) {
-        "coverage_results_path=$coverage_results_path" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            Set-ActionOutput -Name coverage_results_path -Value $coverage_results_path
 
         Build-CoverageReport
 
@@ -476,6 +479,6 @@ if ($test_results_path) {
 }
 
 if ($stepShouldFail) {
-    Write-Host "Thowing error as one or more tests failed and 'tests_fail_step' was true."
+    Write-ActionInfo "Thowing error as one or more tests failed and 'tests_fail_step' was true."
     throw "One or more tests failed."
 }
