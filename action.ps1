@@ -18,7 +18,7 @@ $modulesToInstall | ForEach-Object {
 Import-Module GitHubActions -Force
 Import-Module Pester -Force
 
-Write-Host "Running from [$($PSScriptRoot)]"
+Write-ActionInfo "Running from [$($PSScriptRoot)]"
 
 function splitListInput { $args[0] -split ',' | % { $_.Trim() } }
 function writeListInput { $args[0] | % { Write-ActionInfo "    - $_" } }
@@ -456,7 +456,7 @@ if ($test_results_path) {
     $reportData = [System.IO.File]::ReadAllText($test_report_path)
 
     if ($coverage_results_path) {
-            Set-ActionOutput -Name coverage_results_path -Value $coverage_results_path
+        Set-ActionOutput -Name coverage_results_path -Value $coverage_results_path
 
         Build-CoverageReport
 
