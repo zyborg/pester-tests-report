@@ -55,7 +55,10 @@ Here's a quick example of how to use this action in your own GitHub Workflows.
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
     steps:
+      - uses: actions/checkout@v3
       - name: test module
         id: test_module
         uses: zyborg/pester-tests-report@v1
