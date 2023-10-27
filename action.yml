@@ -13,6 +13,15 @@ description: |
 ## You also use these to identify the *required* inputs.
 inputs:
 
+  shell:
+    description: |
+      Specifies whether pester should run in Powershell or Windows 
+      PowerShell. Valid values are 'pwsh' (PowerShell) and 'powershell' 
+      (Windows Powershell). Defaults to 'pwsh'. Note that the 'powershell' 
+      option is only valid when run on Windows.
+    required: false
+    default: pwsh
+
   test_results_path:
     description: |
       Path to the test results file which will be used to generate
@@ -182,11 +191,13 @@ outputs:
       was provided to this action, this value will be the same.
       Otherwise, this will be the path to where the test results
       file was generated from running the resolved Pester tests.
+    value: ${{ steps.runaction.outputs.test_results_path }}
   
   error_message:
     description: |
       The summary message of the error returned by Pester, or
       empty if no error was produced.
+    value: ${{ steps.runaction.outputs.error_message }}
   
   error_clixml_path:
     description:
@@ -194,6 +205,7 @@ outputs:
       be the path to an export of the full error record in the
       CLIXML form.  A subsequent PowerShell step can recover
       this object using the `Import-Clixml` cmdlet.
+    value: ${{ steps.runaction.outputs.error_clixml_path }}
   
   result_clixml_path:
     description:
@@ -201,32 +213,63 @@ outputs:
       be the path to an export of the full result record in the
       CLIXML form.  A subsequent PowerShell step can recover
       this object using the `Import-Clixml` cmdlet.
+    value: ${{ steps.runaction.outputs.result_clixml_path }}
 
   result_value:
     description: |
       A single string indicating the final result such as
       `Failed` or `Passed`.
+    value: ${{ steps.runaction.outputs.result_value }}
   
   total_count:
     description: Total number of tests discovered.
+    value: ${{ steps.runaction.outputs.total_count }}
 
   passed_count:
     description: Total number of tests passed.
+    value: ${{ steps.runaction.outputs.passed_count }}
 
   failed_count:
     description: Total number of tests failed.
+    value: ${{ steps.runaction.outputs.failed_count }}
 
   coverage_results_path:
     description: |
       Path to the code coverage results file in JaCoCo XML format.
+    value: ${{ steps.runaction.outputs.coverage_results_path }}
 
 
 branding:
   color: purple
   icon: check-circle
 
-## Even though the Action logic may be implemented
-## in PWSH, we still need a NodeJS entry point
 runs:
-  using: node12
-  main: _init/index.js
+  using: composite
+  steps:
+    - name: Run Action
+      id: runaction
+      run: . "$env:GITHUB_ACTION_PATH\action.ps1"
+      shell: ${{ inputs.shell }}
+      env:
+        INPUT_TEST_RESULTS_PATH: ${{ inputs.test_results_path }}
+        INPUT_FULL_NAMES_FILTERS: ${{ inputs.full_names_filters }}
+        INPUT_INCLUDE_PATHS: ${{ inputs.include_paths }}
+        INPUT_EXCLUDE_PATHS: ${{ inputs.exclude_paths }}
+        INPUT_INCLUDE_TAGS: ${{ inputs.include_tags }}
+        INPUT_EXCLUDE_TAGS: ${{ inputs.exclude_tags }}
+        INPUT_OUTPUT_LEVEL: ${{ inputs.output_level }}
+        INPUT_REPORT_NAME: ${{ inputs.report_name }}
+        INPUT_REPORT_TITLE: ${{ inputs.report_title }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github_token }}
+        INPUT_SKIP_CHECK_RUN: ${{ inputs.skip_check_run }}
+        INPUT_GIST_NAME: ${{ inputs.gist_name }}
+        INPUT_GIST_BADGE_LABEL: ${{ inputs.gist_badge_label }}
+        INPUT_GIST_BADGE_MESSAGE: ${{ inputs.gist_badge_message }}
+        INPUT_GIST_TOKEN: ${{ inputs.gist_token }}
+        INPUT_COVERAGE_PATHS: ${{ inputs.coverage_paths }}
+        INPUT_COVERAGE_REPORT_NAME: ${{ inputs.coverage_report_name }}
+        INPUT_COVERAGE_REPORT_TITLE: ${{ inputs.coverage_report_title }}
+        INPUT_COVERAGE_GIST: ${{ inputs.coverage_gist }}
+        INPUT_COVERAGE_GIST_BADGE_LABEL: ${{ inputs.coverage_gist_badge_label }}
+        INPUT_TESTS_FAIL_STEP: ${{ inputs.tests_fail_step }}
+

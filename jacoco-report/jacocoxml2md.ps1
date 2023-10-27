@@ -70,8 +70,8 @@ $script:wrtr = [System.IO.StreamWriter]::new($mdFile)
 try {
     Write-Verbose "Transforming XML to MD"
     $script:readerSettings = [System.Xml.XmlReaderSettings]::new()
-    $script:readerSettings.DtdProcessing = "Parse"
-    $script:reader = [System.Xml.XmlReader]::Create($xmlFile,$script:readerSettings)
+    $script:readerSettings.DtdProcessing = "Ignore"
+    $script:reader = [System.Xml.XmlReader]::Create($xmlFile, $script:readerSettings)
 
     $script:xslt.Transform(
         [System.Xml.XmlReader]$script:reader,

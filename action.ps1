@@ -74,7 +74,8 @@ else {
     $output_level       = splitListInput $inputs.output_level
 
     Write-ActionInfo "Running Pester tests with following:"
-    Write-ActionInfo "  * realtive to PWD: $PWD"
+    Write-ActionInfo "  * relative to PWD: $PWD"
+    Write-ActionInfo "  * PowerShell version: $($PSVersionTable.PSVersion.ToString()) $($PSVersionTable.PSEdition)"
     $pesterConfig = [PesterConfiguration]::new()
 
     if ($full_names_filters) {
@@ -141,6 +142,7 @@ else {
     $pesterConfig.Run.PassThru = $true
     $pesterConfig.TestResult.Enabled = $true
     $pesterConfig.TestResult.OutputPath = $test_results_path
+    $pesterConfig.TestResult.TestSuiteName = "Pester on PowerShell $($PSVersionTable.PSVersion.ToString()) $($PSVersionTable.PSEdition)"
 
     $error_message = ''
     $error_clixml_path = ''
@@ -205,6 +207,7 @@ function Resolve-EscapeTokens {
     $m += $Message.Substring($p2 + 1)
 
     if ($UrlEncode) {
+        Add-Type -AssemblyName System.Web
         $m = [System.Web.HTTPUtility]::UrlEncode($m).Replace('+', '%20')
     }
 
@@ -329,7 +332,7 @@ function Publish-ToGist {
     $listGistsResp = Invoke-WebRequest -Headers $apiHeaders -Uri $gistsApiUrl
 
     ## Parse response content as JSON
-    $listGists = $listGistsResp.Content | ConvertFrom-Json -AsHashtable
+    $listGists = $listGistsResp.Content | ConvertFrom-Json
     Write-ActionInfo "Got [$($listGists.Count)] Gists for current account"
 
     ## Isolate the first Gist with a file matching the expected metadata name
@@ -432,7 +435,7 @@ function Publish-ToGist {
             public = $true ## Set thit to false to make it a Secret Gist
             files = $gistFiles
         } | ConvertTo-Json)
-        $createGist = $createGistResp.Content | ConvertFrom-Json -AsHashtable
+        $createGist = $createGistResp.Content | ConvertFrom-Json
         $reportGist = $createGist
         Write-ActionInfo "Create Response: $createGistResp"
     }
@@ -478,6 +481,6 @@ if ($test_results_path) {
 }
 
 if ($stepShouldFail) {
-    Write-ActionInfo "Thowing error as ne or more tests failed and 'tests_fail_step' was true."
+    Write-ActionInfo "Thowing error as one or more tests failed and 'tests_fail_step' was true."
     throw "One or more tests failed."
 }
