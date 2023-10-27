@@ -142,6 +142,7 @@ else {
     $pesterConfig.Run.PassThru = $true
     $pesterConfig.TestResult.Enabled = $true
     $pesterConfig.TestResult.OutputPath = $test_results_path
+    $pesterConfig.TestResult.TestSuiteName = "Pester on PowerShell $($PSVersionTable.PSVersion.ToString()) $($PSVersionTable.PSEdition)"
 
     $error_message = ''
     $error_clixml_path = ''
