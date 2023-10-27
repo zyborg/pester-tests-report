@@ -206,6 +206,7 @@ function Resolve-EscapeTokens {
     $m += $Message.Substring($p2 + 1)
 
     if ($UrlEncode) {
+        Add-Type -AssemblyName System.Web
         $m = [System.Web.HTTPUtility]::UrlEncode($m).Replace('+', '%20')
     }
 
